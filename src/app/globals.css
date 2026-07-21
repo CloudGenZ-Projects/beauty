@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ss-pink: #d81b60;
+    --ss-purple: #8e24aa;
+    --ss-light-pink: #fce4ec;
+    --ss-gold: #e5b869;
+    --bg-main: #ffffff;
+    --text-dark: #333333;
+    --text-muted: #777777;
+    --border-subtle: #eeeeee;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-dark);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: clip;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    font-weight: 700;
+  }
+}
+
+/* Custom Minimalist Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ss-pink);
+}
+
+/* Utilities for SS Cosmetics UI */
+.bg-ss-gradient {
+  background: linear-gradient(90deg, var(--ss-purple) 0%, var(--ss-pink) 100%);
+}
+.text-ss-gradient {
+  background: linear-gradient(90deg, var(--ss-purple) 0%, var(--ss-pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Image Zoom */
+.image-zoom-container {
+  overflow: hidden;
+}
+.image-zoom-container img {
+  transition: transform 0.4s ease;
+}
+.image-zoom-container:hover img {
+  transform: scale(1.05);
+}
