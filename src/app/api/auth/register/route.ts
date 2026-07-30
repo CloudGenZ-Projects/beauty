@@ -1,40 +1,56 @@
 import { NextResponse } from "next/server";
-import { query } from "@/lib/db";
-import bcrypt from "bcryptjs";
 
 export async function POST(request: Request) {
   try {
-    const { email, password, firstName, lastName } = await request.json();
+    const { email, password } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email and password are required" }, { status: 400 });
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const existing = await query("SELECT id FROM beautyshop_users WHERE email = ?", [cleanEmail]);
+    // 1. Get variables matching exactly what is in your .env file
+    // Using .trim() to remove any accidental spaces (like " https://...")
+    const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim(); 
+    const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
+    const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
 
-    if (existing && existing.length > 0) {
-      return NextResponse.json({ error: "An account with this email already exists" }, { status: 409 });
+    if (!wpUrl || !consumerKey || !consumerSecret) {
+      console.error("Missing WooCommerce keys in .env. wpUrl:", wpUrl, "key:", consumerKey ? "exists" : "missing");
+      return NextResponse.json({ error: "Server configuration error. Missing API keys." }, { status: 500 });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // Remove the trailing slash from the URL if it exists
+    const baseUrl = wpUrl.replace(/\/$/, "");
 
-    const result = await query(
-      "INSERT INTO beautyshop_users (email, password, first_name, last_name, status) VALUES (?, ?, ?, ?, 'active')",
-      [cleanEmail, hashedPassword, firstName || null, lastName || null]
-    );
+    // 2. Call WordPress / WooCommerce REST API
+    const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/customers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+        username: email.split('@')[0] 
+      })
+    });
 
-    const newUser = {
-      id: result.insertId,
-      email: cleanEmail,
-      firstName: firstName || "",
-      lastName: lastName || "",
-    };
+    const data = await wpResponse.json();
 
-    return NextResponse.json({ success: true, user: newUser }, { status: 201 });
+    // 3. Handle WordPress errors (like email already exists)
+    if (!wpResponse.ok) {
+      return NextResponse.json(
+        { error: data.message || "An account with this email already exists." },
+        { status: wpResponse.status }
+      );
+    }
+
+    // 4. Success!
+    return NextResponse.json({ success: true, userId: data.id }, { status: 201 });
+
   } catch (error: any) {
-    console.error("Register API error:", error);
-    return NextResponse.json({ error: "Registration failed. Please check database connection." }, { status: 500 });
+    console.error("API error:", error);
+    return NextResponse.json({ error: "Failed to register user." }, { status: 500 });
   }
 }

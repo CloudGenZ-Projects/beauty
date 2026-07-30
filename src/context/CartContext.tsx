@@ -51,11 +51,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addItem = (newItem: CartItem) => {
     setItems((prev) => {
       const existingIndex = prev.findIndex((i) => i.id === newItem.id);
+      
       if (existingIndex > -1) {
         const updated = [...prev];
-        updated[existingIndex].quantity += newItem.quantity || 1;
+        // FIX: Create a new object for the updated item instead of mutating the old one directly
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity: updated[existingIndex].quantity + (newItem.quantity || 1)
+        };
         return updated;
       }
+      
       return [...prev, { ...newItem, quantity: newItem.quantity || 1 }];
     });
     setIsOpen(true);

@@ -2,20 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
-import { ShoppingBag, Search, User, Menu, X, ChevronRight } from "lucide-react";
+import { useWishlist } from "@/context/WishlistContext"; // <-- Added Wishlist Context
+import { ShoppingBag, Search, User, Menu, X, ChevronRight, Heart } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const pathname = usePathname();
-  // Removed openCart to use direct Link redirection to /cart
+  const router = useRouter();
+  
   const { totalItems } = useCart();
+  const { wishlist } = useWishlist(); // <-- To show wishlist item count
+  
   const [isOpen, setIsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Close sidebar on route change
+  // Close sidebar and search on route change
   useEffect(() => {
     setIsOpen(false);
+    setIsSearchOpen(false);
   }, [pathname]);
 
   // Prevent background scrolling when sidebar is open
@@ -30,7 +37,15 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
-  // Exact navigation links based on your request
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
   const MAIN_NAV = [
     { name: "HOME", href: "/" },
     { name: "CATALOGUE", href: "/shop" },
@@ -39,7 +54,6 @@ export default function Navbar() {
     { name: "HAUTE PARFUM", href: "/shop?category=perfume" },
   ];
 
-  // Sidebar Filter Categories
   const FILTER_CATEGORIES = [
     "BODY CARE",
     "CREAMS",
@@ -50,7 +64,7 @@ export default function Navbar() {
   return (
     <>
       {/* --- MAIN HEADER --- */}
-      <header className="sticky top-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 z-50 transition-all duration-300">
+      <header className="sticky top-0 w-full bg-white/95 backdrop-blur-md border-b border-gray-100 z-50 transition-all duration-300 relative">
         <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 md:px-8 h-20 flex items-center justify-between">
           
           {/* Left: Mobile Menu Toggle */}
@@ -84,21 +98,33 @@ export default function Navbar() {
           </div>
 
           {/* Right: Action Icons */}
-          <div className="flex-1 flex items-center justify-end gap-5 sm:gap-6 text-gray-900">
-            {/* FIXED: Search Icon is now a Link to /shop */}
-            <Link href="/shop" className="hover:text-[#d81b60] transition-colors hidden sm:block focus:outline-none">
-              <Search className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
+          <div className="flex-1 flex items-center justify-end gap-4 sm:gap-6 text-gray-900">
+            
+            {/* 1. Search Toggle Button */}
+            <button 
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className={`transition-colors focus:outline-none ${isSearchOpen ? 'text-[#d81b60]' : 'hover:text-[#d81b60]'}`}
+            >
+              {isSearchOpen ? <X className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" /> : <Search className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />}
+            </button>
+
+            {/* 2. Wishlist Icon (New) */}
+            <Link href="/wishlist" className="relative hover:text-[#d81b60] transition-colors hidden sm:block focus:outline-none">
+              <Heart className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1.5 -right-2 md:-top-2 md:-right-2 bg-pink-500 text-white text-[9px] md:text-[10px] font-bold w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center shadow-sm">
+                  {wishlist.length}
+                </span>
+              )}
             </Link>
             
-            <Link href="/auth" className="hover:text-[#d81b60] transition-colors hidden sm:block">
+            {/* 3. Account Icon */}
+            <Link href="/account" className="hover:text-[#d81b60] transition-colors hidden sm:block">
               <User className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
             </Link>
             
-            {/* FIXED: Cart Icon is now a Link redirecting to /cart */}
-            <Link 
-              href="/cart" 
-              className="relative hover:text-[#d81b60] transition-colors focus:outline-none"
-            >
+            {/* 4. Cart Icon */}
+            <Link href="/cart" className="relative hover:text-[#d81b60] transition-colors focus:outline-none">
               <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
               {totalItems > 0 && (
                 <span className="absolute -top-1.5 -right-2 md:-top-2 md:-right-2 bg-[#d81b60] text-white text-[9px] md:text-[10px] font-bold w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center shadow-sm">
@@ -108,6 +134,38 @@ export default function Navbar() {
             </Link>
           </div>
         </div>
+
+        {/* --- SEARCH DROPDOWN UI --- */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-lg z-40 overflow-hidden"
+            >
+              <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-4 md:py-6">
+                <form onSubmit={handleSearch} className="relative flex items-center">
+                  <Search className="absolute left-4 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search for beauty, serums, perfumes..."
+                    autoFocus
+                    className="w-full bg-gray-50 border-2 border-transparent focus:border-pink-100 focus:bg-white rounded-xl py-3 md:py-4 pl-12 pr-24 text-sm md:text-base outline-none transition-all shadow-inner"
+                  />
+                  <button 
+                    type="submit" 
+                    className="absolute right-2 bg-black text-white px-5 py-2 md:py-2.5 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-[#d81b60] transition-colors"
+                  >
+                    Search
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Desktop Navigation Links (Under Header) */}
         <div className="hidden lg:flex w-full bg-white border-t border-gray-100 items-center justify-center h-12 gap-10">
@@ -208,14 +266,22 @@ export default function Navbar() {
               {/* Bottom Actions / Footer of Sidebar */}
               <div className="p-6 mt-auto bg-gray-50 border-t border-gray-100 flex flex-col gap-4">
                 <div className="flex items-center justify-center gap-6 pb-4 border-b border-gray-200">
-                   <Link href="/auth" onClick={() => setIsOpen(false)} className="flex flex-col items-center gap-1 text-gray-600 hover:text-[#d81b60]">
+                   
+                   <Link href="/wishlist" onClick={() => setIsOpen(false)} className="flex flex-col items-center gap-1 text-gray-600 hover:text-[#d81b60] relative">
+                      <Heart className="w-5 h-5" />
+                      {wishlist.length > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#d81b60] rounded-full"></span>}
+                      <span className="text-[10px] uppercase font-bold tracking-widest">Saved</span>
+                   </Link>
+
+                   <Link href="/account" onClick={() => setIsOpen(false)} className="flex flex-col items-center gap-1 text-gray-600 hover:text-[#d81b60]">
                       <User className="w-5 h-5" />
                       <span className="text-[10px] uppercase font-bold tracking-widest">Account</span>
                    </Link>
-                   {/* FIXED: Sidebar Cart Icon is now a Link redirecting to /cart */}
-                   <Link href="/cart" onClick={() => setIsOpen(false)} className="flex flex-col items-center gap-1 text-gray-600 hover:text-[#d81b60]">
+                   
+                   <Link href="/cart" onClick={() => setIsOpen(false)} className="flex flex-col items-center gap-1 text-gray-600 hover:text-[#d81b60] relative">
                       <ShoppingBag className="w-5 h-5" />
-                      <span className="text-[10px] uppercase font-bold tracking-widest">Cart ({totalItems})</span>
+                      {totalItems > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#d81b60] rounded-full"></span>}
+                      <span className="text-[10px] uppercase font-bold tracking-widest">Cart</span>
                    </Link>
                 </div>
                 

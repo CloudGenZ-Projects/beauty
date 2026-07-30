@@ -5,6 +5,37 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { ShoppingCart, ChevronRight, ChevronLeft, Zap, Star, LayoutGrid } from "lucide-react";
 
+// --- HERO SLIDER DATA ---
+const HERO_SLIDES = [
+  {
+    id: 1,
+    image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=1600&q=80",
+    title: "Summer Glam Collection",
+    subtitle: "Up to 50% Off on Top Beauty Brands",
+    buttonText: "Shop The Sale",
+    link: "/shop?collection=summer",
+    align: "items-start text-left"
+  },
+  {
+    id: 2,
+    image: "https://images.unsplash.com/photo-1615397323625-27a13d08f7ce?w=1600&q=80",
+    title: "Premium Skincare",
+    subtitle: "Discover your natural glow with organic picks",
+    buttonText: "Explore Skincare",
+    link: "/shop?category=skincare",
+    align: "items-center text-center"
+  },
+  {
+    id: 3,
+    image: "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=1600&q=80",
+    title: "Luxury Fragrances",
+    subtitle: "Unforgettable signature scents for every occasion",
+    buttonText: "Discover Fragrances",
+    link: "/shop?category=fragrance",
+    align: "items-end text-right"
+  }
+];
+
 const CIRCULAR_DEALS = [
   { label: "Under ₹99", price: "99", highlight: false, type: "under", color: "border-[#ffb74d]", link: "/shop?max_price=99" },
   { label: "Under ₹199", price: "199", highlight: false, type: "under", color: "border-[#4db6ac]", link: "/shop?max_price=199" },
@@ -62,7 +93,21 @@ export default function HomePage() {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(true);
   
+  // Hero Slider State
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
   const { addItem } = useCart();
+
+  // Hero Slider Autoplay Logic
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev === HERO_SLIDES.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const nextSlide = () => setCurrentSlide((prev) => (prev === HERO_SLIDES.length - 1 ? 0 : prev + 1));
+  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? HERO_SLIDES.length - 1 : prev - 1));
 
   useEffect(() => {
     fetch("/api/products?per_page=100")
@@ -162,6 +207,60 @@ export default function HomePage() {
   return (
     <div className="w-full overflow-hidden bg-white">
       
+      {/* 0. INTERACTIVE HERO SLIDER CAROUSEL */}
+      <section className="relative w-full h-[60vh] md:h-[80vh] bg-gray-900 group overflow-hidden">
+        {HERO_SLIDES.map((slide, index) => (
+          <div 
+            key={slide.id} 
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+          >
+            <img 
+              src={slide.image} 
+              alt={slide.title} 
+              className={`w-full h-full object-cover transition-transform duration-[10000ms] ${currentSlide === index ? 'scale-110' : 'scale-100'}`} 
+            />
+            <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/60 to-transparent" />
+            
+            <div className={`absolute inset-0 flex flex-col justify-center px-8 md:px-20 max-w-[1600px] mx-auto ${slide.align}`}>
+              <h2 className="text-white text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-wider mb-4 drop-shadow-lg leading-tight">
+                {slide.title}
+              </h2>
+              <p className="text-white/90 text-lg md:text-2xl font-light mb-8 drop-shadow-md">
+                {slide.subtitle}
+              </p>
+              <Link href={slide.link} prefetch={false} className="bg-white text-black px-8 py-3.5 md:px-10 md:py-4 rounded-sm font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#d81b60] hover:text-white transition-colors duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[#d81b60]/50">
+                {slide.buttonText}
+              </Link>
+            </div>
+          </div>
+        ))}
+
+        {/* Slider Navigation Arrows */}
+        <button 
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/90 text-white hover:text-black p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+        >
+          <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
+        </button>
+        <button 
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/90 text-white hover:text-black p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+        >
+          <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
+        </button>
+
+        {/* Slider Indicator Dots */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+          {HERO_SLIDES.map((_, index) => (
+            <button 
+              key={index} 
+              onClick={() => setCurrentSlide(index)}
+              className={`transition-all duration-300 rounded-full shadow-lg ${currentSlide === index ? 'w-8 h-2.5 bg-[#d81b60]' : 'w-2.5 h-2.5 bg-white/60 hover:bg-white'}`}
+            />
+          ))}
+        </div>
+      </section>
+
       {/* 1. Circular Discount Deals */}
       <section className="bg-[#fce4ec] py-4 md:py-6 w-full border-b border-pink-200">
         <div className="max-w-[100vw] mx-auto px-4 overflow-x-auto scrollbar-hide snap-x">
@@ -197,8 +296,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 2. Handpicked For You - Categories */}
-     {/* 2. NEW PREMIUM UI: Handpicked For You - All Collection */}
+      {/* 2. Handpicked For You - All Collection */}
       <section className="py-12 md:py-16 bg-[#faf6f0]">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
           
@@ -266,6 +364,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      
       {/* --- GRID 1: Right after "All Collection" --- */}
       {renderProductGrid("Recent Top Selling Product", getSafeItems(products, 0, 10), "bg-[#b456c8]", "bg-[#ea93f6]")}
 
@@ -300,7 +399,6 @@ export default function HomePage() {
                          return (
                            <div key={`p1-${brand.id}-${prod.id}-${pIdx}`} className="min-w-[160px] md:min-w-[220px] max-w-[240px] bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col snap-start group hover:shadow-lg transition-shadow">
                               
-                              {/* FIX: Link aur Button ko alag kiya hai yahan */}
                               <div className="relative h-40 md:h-52 p-4 bg-white rounded-t-lg">
                                  <Link href={`/shop/${safeSlug}`} prefetch={false} className="absolute inset-0 z-10" />
                                  <img src={imgUrl} alt={prod.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 relative z-0 pointer-events-none" />
@@ -444,7 +542,6 @@ export default function HomePage() {
                          return (
                            <div key={`p2-${brand.id}-${prod.id}-${pIdx}`} className="min-w-[160px] md:min-w-[220px] max-w-[240px] bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col snap-start group hover:shadow-lg transition-shadow">
                               
-                              {/* FIX: Link aur Button ko alag kiya hai yahan */}
                               <div className="relative h-40 md:h-52 p-4 bg-white rounded-t-lg">
                                  <Link href={`/shop/${safeSlug}`} prefetch={false} className="absolute inset-0 z-10" />
                                  <img src={imgUrl} alt={prod.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 relative z-0 pointer-events-none" />
