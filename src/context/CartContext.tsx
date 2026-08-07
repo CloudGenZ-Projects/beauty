@@ -29,7 +29,11 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Naya state: taaki blank data save na ho
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // 1. Read Data on Mount
   useEffect(() => {
     const saved = localStorage.getItem("loiseau_cart");
     if (saved) {
@@ -39,11 +43,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to parse cart state", e);
       }
     }
+    setIsInitialized(true); // Read complete ho gaya
   }, []);
 
+  // 2. Save Data (Only after reading is done)
   useEffect(() => {
-    localStorage.setItem("loiseau_cart", JSON.stringify(items));
-  }, [items]);
+    if (isInitialized) {
+      const cartString = JSON.stringify(items);
+      
+      // Save to LocalStorage
+      localStorage.setItem("loiseau_cart", cartString);
+      
+      // Save to Cookie
+      document.cookie = `loiseau_cart=${encodeURIComponent(cartString)}; path=/; max-age=604800; SameSite=Lax`;
+    }
+  }, [items, isInitialized]);
 
   const openCart = () => setIsOpen(true);
   const closeCart = () => setIsOpen(false);
@@ -54,7 +68,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       
       if (existingIndex > -1) {
         const updated = [...prev];
-        // FIX: Create a new object for the updated item instead of mutating the old one directly
         updated[existingIndex] = {
           ...updated[existingIndex],
           quantity: updated[existingIndex].quantity + (newItem.quantity || 1)

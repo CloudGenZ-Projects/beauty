@@ -196,3 +196,38 @@ export async function fetchCategories(): Promise<WooCategory[]> {
   setCache(cacheKey, data);
   return data;
 }
+
+// Add this at the end of your lib/woocommerce.ts
+export async function createWooOrder(orderData: any): Promise<any> {
+  return wooFetch<any>("/orders", {
+    method: "POST",
+    body: JSON.stringify(orderData),
+  });
+}
+
+export async function updateWooOrder(orderId: number | string, data: any): Promise<any> {
+  return wooFetch<any>(`/orders/${orderId}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function refundWooOrder(orderId: number | string, amount: string): Promise<any> {
+  return wooFetch<any>(`/orders/${orderId}/refunds`, {
+    method: "POST",
+    body: JSON.stringify({ amount }),
+  });
+}
+
+// Add this at the bottom of lib/woocommerce.ts
+
+// Function to add a note to an existing WooCommerce order (Useful for Returns)
+export async function addWooOrderNote(orderId: number | string, note: string, isCustomerNote: boolean = false): Promise<any> {
+  return wooFetch<any>(`/orders/${orderId}/notes`, {
+    method: "POST",
+    body: JSON.stringify({ 
+      note, 
+      customer_note: isCustomerNote 
+    }),
+  });
+}
