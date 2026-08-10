@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -35,9 +35,24 @@ interface SuggestionProduct {
   category: string;
 }
 
+function SearchParamsSync({ setSearchQuery }: { setSearchQuery: (q: string) => void }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const currentQ = searchParams.get("q");
+    if (currentQ) {
+      setSearchQuery(currentQ);
+    } else {
+      setSearchQuery("");
+    }
+  }, [pathname, searchParams, setSearchQuery]);
+
+  return null;
+}
+
 export default function Navbar() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
 
   const { totalItems } = useCart();
@@ -74,19 +89,12 @@ export default function Navbar() {
     loadMegaMenu();
   }, []);
 
-  // Sync search input with URL params
+  // Reset navigation states on pathname change
   useEffect(() => {
     setIsOpen(false);
     setIsSearchFocused(false);
     setActiveMegaMenu(null);
-
-    const currentQ = searchParams.get("q");
-    if (currentQ) {
-      setSearchQuery(currentQ);
-    } else {
-      setSearchQuery("");
-    }
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   // Click outside search container to dismiss popover
   useEffect(() => {
@@ -164,6 +172,9 @@ export default function Navbar() {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <SearchParamsSync setSearchQuery={setSearchQuery} />
+      </Suspense>
       <header
         className="sticky top-0 w-full bg-white z-50 border-b border-gray-200 shadow-sm"
         onMouseLeave={() => setActiveMegaMenu(null)}
