@@ -1,17 +1,21 @@
-// P:\git\buaty\7\src\app\cart\page.tsx
 import { cookies } from "next/headers";
 import ClientCart from "./ClientCart";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shopping Bag | VÉLOURS Atelier",
+  description: "Review your selected luxury beauty items and checkout securely.",
+};
 
 export const dynamic = "force-dynamic";
 
-export default async function CartPageSSR() {
+export default async function CartPage() {
   const cookieStore = await cookies();
   const cartCookie = cookieStore.get("loiseau_cart");
 
   let initialCart = [];
 
   try {
-    // Agar cookie mein cart hai, toh usko server par hi parse kar lo
     if (cartCookie?.value) {
       initialCart = JSON.parse(decodeURIComponent(cartCookie.value));
     }
@@ -19,6 +23,5 @@ export default async function CartPageSSR() {
     console.error("Failed to parse cart cookie on server", error);
   }
 
-  // Server data ko Client component mein bhej do
   return <ClientCart initialCart={initialCart} />;
 }

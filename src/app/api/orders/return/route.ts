@@ -1,26 +1,41 @@
 import { NextResponse } from "next/server";
-import { updateWooOrder, addWooOrderNote } from "@/lib/woocommerce";
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { orderId, reason } = await req.json();
+    const { orderId, reason } = await request.json();
 
     if (!orderId || !reason) {
       return NextResponse.json({ error: "Order ID and reason are required" }, { status: 400 });
     }
 
-    // 1. Add a note to the WooCommerce order so the Store Admin knows why the user wants a return
-    const noteContent = `⚠️ CUSTOMER RETURN REQUEST: ${reason}`;
-    await addWooOrderNote(orderId, noteContent, false); // false means private note for admin
+    const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
+    const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
+    const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
+    const baseUrl = wpUrl?.replace(/\/$/, "");
 
-    // 2. Change WooCommerce Order status to "on-hold" 
-    // (This flags the order in the Admin Dashboard so the admin can process the refund via Stripe/WooCommerce)
-    await updateWooOrder(orderId, { status: "on-hold" });
-
-    return NextResponse.json({ success: true, message: "Return request submitted successfully." });
+    const authHeader = 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
     
+    // 1. Change status to "on-hold" for admin review
+    const statusRes = await fetch(`${baseUrl}/wp-json/wc/v3/orders/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: "on-hold" })
+    });
+
+    if (!statusRes.ok) throw new Error("Failed to update order status");
+
+    // 2. Add an internal Order Note with the return reason
+    await fetch(`${baseUrl}/wp-json/wc/v3/orders/${orderId}/notes`, {
+      method: 'POST',
+      headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        note: `Customer requested a return. Reason: ${reason}.`, 
+        customer_note: false // Keep it internal for the shop admin
+      })
+    });
+
+    return NextResponse.json({ success: true, message: "Return requested successfully" });
   } catch (error: any) {
-    console.error("Return Request API Error:", error);
-    return NextResponse.json({ error: "Failed to submit return request." }, { status: 500 });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

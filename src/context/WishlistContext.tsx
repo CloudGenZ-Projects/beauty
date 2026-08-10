@@ -1,75 +1,103 @@
 "use client";
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-interface WishlistItem {
-  id: number;
+export interface WishlistItem {
+  id: number | string;
   name: string;
   slug: string;
   price: string;
+  regular_price?: string;
   image: string;
 }
 
 interface WishlistContextType {
   wishlist: WishlistItem[];
   addToWishlist: (item: WishlistItem) => void;
-  removeFromWishlist: (id: number) => void;
-  isInWishlist: (id: number) => boolean;
+  removeFromWishlist: (id: number | string) => void;
+  toggleWishlist: (item: WishlistItem) => void;
+  isInWishlist: (id: number | string) => boolean;
+  clearWishlist: () => void;
 }
 
 const WishlistContext = createContext<WishlistContextType | undefined>(undefined);
 
-export function WishlistProvider({ children }: { children: React.ReactNode }) {
+export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
-  
-  // Ek flag taaki page load hote hi khali array save na ho jaye
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // 1. Page Load par Data Get Karna (Local storage se)
+  // Load wishlist from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("wishlist_items");
-    if (saved) {
-      try {
-        setWishlist(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse wishlist", e);
+    try {
+      const savedWishlist = localStorage.getItem("velours_wishlist");
+      if (savedWishlist) {
+        setWishlist(JSON.parse(savedWishlist));
       }
+    } catch (error) {
+      console.error("Failed to load wishlist from localStorage:", error);
+    } finally {
+      setIsLoaded(true);
     }
-    setIsInitialized(true);
   }, []);
 
-  // 2. Data Save Karna (Local Storage + Cookies dono mein)
+  // Save wishlist to localStorage when updated
   useEffect(() => {
-    if (isInitialized) {
-      const wishlistString = JSON.stringify(wishlist);
-      
-      // Save to Local Storage
-      localStorage.setItem("wishlist_items", wishlistString);
-      
-      // Save to Cookies (Yeh server ko read karne mein help karega)
-      document.cookie = `loiseau_wishlist=${encodeURIComponent(wishlistString)}; path=/; max-age=604800; SameSite=Lax`;
+    if (isLoaded) {
+      try {
+        localStorage.setItem("velours_wishlist", JSON.stringify(wishlist));
+      } catch (error) {
+        console.error("Failed to save wishlist to localStorage:", error);
+      }
     }
-  }, [wishlist, isInitialized]);
+  }, [wishlist, isLoaded]);
 
-  // 3. Actions (Ab sirf state update karenge, saving upar wala useEffect handle karega)
   const addToWishlist = (item: WishlistItem) => {
-    setWishlist((prev) => [...prev, item]);
+    setWishlist((prev) => {
+      if (prev.some((i) => String(i.id) === String(item.id))) return prev;
+      return [...prev, item];
+    });
   };
 
-  const removeFromWishlist = (id: number) => {
-    setWishlist((prev) => prev.filter((item) => item.id !== id));
+  const removeFromWishlist = (id: number | string) => {
+    setWishlist((prev) => prev.filter((item) => String(item.id) !== String(id)));
   };
 
-  const isInWishlist = (id: number) => wishlist.some((item) => item.id === id);
+  const toggleWishlist = (item: WishlistItem) => {
+    if (isInWishlist(item.id)) {
+      removeFromWishlist(item.id);
+    } else {
+      addToWishlist(item);
+    }
+  };
+
+  const isInWishlist = (id: number | string) => {
+    return wishlist.some((item) => String(item.id) === String(id));
+  };
+
+  const clearWishlist = () => {
+    setWishlist([]);
+  };
 
   return (
-    <WishlistContext.Provider value={{ wishlist, addToWishlist, removeFromWishlist, isInWishlist }}>
+    <WishlistContext.Provider
+      value={{
+        wishlist,
+        addToWishlist,
+        removeFromWishlist,
+        toggleWishlist,
+        isInWishlist,
+        clearWishlist,
+      }}
+    >
       {children}
     </WishlistContext.Provider>
   );
-}
+};
 
 export const useWishlist = () => {
   const context = useContext(WishlistContext);
-  if (!context) throw new Error("useWishlist must be used within WishlistProvider");
+  if (!context) {
+    throw new Error("useWishlist must be used within a WishlistProvider");
+  }
   return context;
 };

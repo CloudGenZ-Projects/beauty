@@ -1,16 +1,16 @@
-// app/shop/[slug]/ClientProductDetail.tsx
 "use client";
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { 
   Plus, Minus, ShoppingCart, Star, 
-  UserCircle, Loader2 
+  UserCircle, Loader2, Heart 
 } from "lucide-react";
 import { getProductImage } from "@/lib/utils";
-import ToastPopup from "@/components/ToastPopup"; // Adjust path if needed
+import ToastPopup from "@/components/ToastPopup";
 
 interface ClientProductDetailProps {
   product: any;
@@ -31,6 +31,9 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
   const popupTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const { addItem } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+
+  const isLiked = isInWishlist(product.id);
 
   // Helper function to show popup
   const showPopup = (message: string, type: "success" | "error") => {
@@ -53,12 +56,10 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
       showPopup("Review submitted successfully!", "success");
       setReviewForm({ reviewer: "", reviewer_email: "", review: "", rating: 5 });
       
-      // Refresh reviews from the server
       const res = await fetch(`/api/reviews?product_id=${product.id}`);
       const newReviews = await res.json();
       setReviews(newReviews);
       
-      // Optional: Refresh the server component in background
       router.refresh(); 
     } catch (error) {
       showPopup("Failed to submit review.", "error");
@@ -70,7 +71,6 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
   const imgUrl = getProductImage(product);
   const currentPrice = product.sale_price || product.price || "0";
 
-  // Buy Now Logic: Add to cart and redirect immediately to checkout
   const handleBuyNow = () => {
     addItem({ 
       id: product.id, 
@@ -80,7 +80,21 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
       quantity, 
       image: imgUrl 
     });
-    router.push('/checkout'); // Update to '/cart' if your checkout page path is different
+    router.push('/checkout');
+  };
+
+  const handleWishlistToggle = () => {
+    toggleWishlist({
+      id: product.id,
+      name: product.name,
+      slug: product.slug || String(product.id),
+      price: currentPrice,
+      image: imgUrl,
+    });
+    showPopup(
+      isLiked ? "Removed from Wishlist" : "Added to Wishlist!",
+      "success"
+    );
   };
 
   return (
@@ -100,12 +114,21 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
             
             {/* Image Gallery */}
             <div className="relative group">
-              <div className="aspect-square bg-[#fff5f8] rounded-2xl overflow-hidden border border-pink-50 flex items-center justify-center p-6 sm:p-8">
+              <div className="aspect-square bg-[#fff5f8] rounded-2xl overflow-hidden border border-pink-50 flex items-center justify-center p-6 sm:p-8 relative">
                 <img 
                   src={imgUrl} 
                   alt={product.name} 
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" 
                 />
+
+                {/* Wishlist Button on Image */}
+                <button
+                  onClick={handleWishlistToggle}
+                  className="absolute top-4 right-4 bg-white/90 backdrop-blur p-3 rounded-full shadow-md text-gray-400 hover:text-[#d81b60] transition-all"
+                  title={isLiked ? "Remove from Wishlist" : "Add to Wishlist"}
+                >
+                  <Heart className={`w-6 h-6 ${isLiked ? "text-[#d81b60] fill-current" : ""}`} />
+                </button>
               </div>
             </div>
 
@@ -173,7 +196,6 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           </h2>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Display Reviews */}
             <div>
               {loadingReviews ? (
                 <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#d81b60]" /></div>
@@ -201,7 +223,6 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
               )}
             </div>
 
-            {/* Write a Review Form */}
             <div className="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-200">
               <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 uppercase tracking-wider">Write a Review</h3>
               <form onSubmit={handleReviewSubmit} className="space-y-4">

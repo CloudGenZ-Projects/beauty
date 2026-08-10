@@ -60,12 +60,10 @@ export default async function AccountPageSSR() {
     } else {
       console.error("WooCommerce Environment variables are missing.");
     }
-
   } catch (error) {
     console.error("Error fetching WooCommerce data in SSR:", error);
   }
 
-  // 3. Render the Client component with the fetched data
   return (
     <ClientAccount 
       user={user} 

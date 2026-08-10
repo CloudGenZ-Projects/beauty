@@ -4,14 +4,9 @@ export async function POST(request: Request) {
   try {
     const { 
       userId, 
-      firstName, 
-      lastName, 
-      phone, 
-      address, 
-      city, 
-      state, 
-      postcode, 
-      country 
+      profile, 
+      billing, 
+      shipping 
     } = await request.json();
 
     if (!userId) {
@@ -28,37 +23,21 @@ export async function POST(request: Request) {
 
     const baseUrl = wpUrl.replace(/\/$/, "");
 
-    // Send updated data to WooCommerce
-    // WooCommerce stores addresses inside "billing" and "shipping" objects
+    // Structure WooCommerce payload
+    const payload = {
+      first_name: profile.first_name,
+      last_name: profile.last_name,
+      billing: billing,
+      shipping: shipping
+    };
+
     const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/customers/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')
       },
-      body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        billing: {
-          first_name: firstName,
-          last_name: lastName,
-          address_1: address,
-          city: city,
-          state: state,
-          postcode: postcode,
-          country: country,
-          phone: phone
-        },
-        shipping: {
-          first_name: firstName,
-          last_name: lastName,
-          address_1: address,
-          city: city,
-          state: state,
-          postcode: postcode,
-          country: country
-        }
-      })
+      body: JSON.stringify(payload)
     });
 
     if (!wpResponse.ok) {
