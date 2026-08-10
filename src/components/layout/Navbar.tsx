@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -77,7 +77,7 @@ interface SuggestionProduct {
   category: string;
 }
 
-export default function Navbar() {
+function NavbarContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -596,5 +596,19 @@ export default function Navbar() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+export default function Navbar() {
+  return (
+    <Suspense
+      fallback={
+        <header className="sticky top-0 w-full bg-white z-50 border-b border-gray-200 shadow-sm">
+          <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4 bg-white" />
+        </header>
+      }
+    >
+      <NavbarContent />
+    </Suspense>
   );
 }
