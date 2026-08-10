@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import { CheckCircle2, ShoppingBag, ArrowRight, PackageCheck, Home } from "lucide-react";
+import { CheckCircle2, ShoppingBag, ArrowRight, PackageCheck, Home, Loader2 } from "lucide-react";
 
-export default function ThankYouPage() {
+function ThankYouContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order_id");
 
@@ -92,5 +92,13 @@ export default function ThankYouPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ThankYouPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-[#d81b60]" /></div>}>
+      <ThankYouContent />
+    </Suspense>
   );
 }
