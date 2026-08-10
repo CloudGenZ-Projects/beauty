@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -20,49 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// --- DUMMY DATA FOR MEGA MENU ---
-const MEGA_MENU_CATEGORIES = {
-  Makeup: [
-    { title: "Face", links: ["Foundation", "Concealer", "Primer", "Blush", "Highlighter"] },
-    { title: "Eyes", links: ["Kajal", "Eyeliner", "Mascara", "Eyeshadow", "Eyebrow"] },
-    { title: "Lips", links: ["Lipstick", "Liquid Lipstick", "Lip Balm", "Lip Gloss"] },
-    { title: "Top Brands", links: ["MAC", "Maybelline", "L'Oreal Paris", "Lakme"] },
-  ],
-  Skin: [
-    { title: "Moisturizers", links: ["Face Wash", "Cleanser", "Micellar Water", "Face Wipes"] },
-    { title: "Serums & Treatments", links: ["Vitamin C", "Hyaluronic Acid", "Retinol", "Acne"] },
-    { title: "Masks", links: ["Sheet Masks", "Sleeping Masks", "Face Packs"] },
-    { title: "Sun Care", links: ["Face Sunscreen", "Body Sunscreen"] },
-  ],
-  Hair: [
-    { title: "Hair Care", links: ["Shampoo", "Conditioner", "Hair Oil", "Hair Serum"] },
-    { title: "Hair Styling", links: ["Hair Spray", "Hair Gel", "Hair Creams"] },
-    { title: "Tools & Accessories", links: ["Hair Dryers", "Straighteners", "Curling Irons"] },
-  ],
-  Fragrance: [
-    { title: "Women's Fragrance", links: ["Perfume", "Body Mist", "Deodorant"] },
-    { title: "Men's Fragrance", links: ["Cologne", "Aftershave", "Deodorant"] },
-    { title: "Premium", links: ["Chanel", "Dior", "Gucci", "Tom Ford"] },
-  ],
-};
-
-const MEGA_MENU_BRANDS = {
-  popular: [
-    "Nykaa Cosmetics",
-    "Dot & Key",
-    "Kay Beauty",
-    "Maybelline New York",
-    "Lakme",
-    "L'Oreal Paris",
-    "MAC",
-    "Plum",
-    "Cetaphil",
-    "The Ordinary",
-    "Laneige",
-    "Innisfree",
-  ],
-  luxe: ["Estee Lauder", "Bobbi Brown", "Clinique", "MAC", "Charlotte Tilbury", "Kérastase"],
-};
+import MegaMenu, { MegaMenuCategories, MegaMenuBrands } from "./MegaMenu";
 
 const POPULAR_SEARCHES = ["Serum", "Lipstick", "Sunscreen", "Vitamin C", "Foundation", "Perfume"];
 
@@ -77,7 +35,7 @@ interface SuggestionProduct {
   category: string;
 }
 
-function NavbarContent() {
+export default function Navbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -94,9 +52,27 @@ function NavbarContent() {
   const [isLoading, setIsLoading] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
 
+  // Dynamic Mega Menu States
   const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
-  const [activeCategoryTab, setActiveCategoryTab] = useState("Skin");
-  const [activeBrandTab, setActiveBrandTab] = useState("popular");
+  const [menuCategories, setMenuCategories] = useState<MegaMenuCategories>({});
+  const [menuBrands, setMenuBrands] = useState<MegaMenuBrands>({ popular: [], luxe: [] });
+
+  // 1. Fetch Dynamic Mega Menu Data from WooCommerce API
+  useEffect(() => {
+    async function loadMegaMenu() {
+      try {
+        const res = await fetch("/api/megamenu");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.categories) setMenuCategories(data.categories);
+          if (data.brands) setMenuBrands(data.brands);
+        }
+      } catch (err) {
+        console.error("Failed to load mega menu:", err);
+      }
+    }
+    loadMegaMenu();
+  }, []);
 
   // Sync search input with URL params
   useEffect(() => {
@@ -160,8 +136,27 @@ function NavbarContent() {
     }
   };
 
+  // -------------------------------------------------------------
+  // DYNAMIC DESKTOP NAVIGATION ITEMS GENERATION
+  // -------------------------------------------------------------
+  const categoryKeys = Object.keys(menuCategories);
+
+  // Generates Top Nav Links from WooCommerce Categories (e.g. MAKEUP, SKIN, HAIR, FRAGRANCE)
+  const categoryNavItems = categoryKeys.map((catName) => ({
+    name: catName.toUpperCase(),
+    hasMegaMenu: true,
+    id: catName, // Passes exact category key to MegaMenu
+    href: `/shop?category=${encodeURIComponent(catName.toLowerCase())}`,
+  }));
+
   const DESKTOP_NAV_ITEMS = [
-    { name: "CATEGORIES", hasMegaMenu: true, id: "categories", href: "/shop" },
+    ...(categoryNavItems.length > 0
+      ? categoryNavItems
+      : [
+          { name: "MAKEUP", hasMegaMenu: true, id: "Makeup", href: "/shop?category=makeup" },
+          { name: "SKIN", hasMegaMenu: true, id: "Skin", href: "/shop?category=skin" },
+          { name: "HAIR", hasMegaMenu: true, id: "Hair", href: "/shop?category=hair" },
+        ]),
     { name: "BRANDS", hasMegaMenu: true, id: "brands", href: "/brands" },
     { name: "LUXE", hasMegaMenu: false, id: "luxe", href: "/shop?category=luxe" },
     { name: "OFFERS", hasMegaMenu: false, id: "offers", href: "/offers" },
@@ -195,7 +190,7 @@ function NavbarContent() {
             </Link>
           </div>
 
-          {/* Center: Embedded Live Search Bar */}
+          {/* Center: Search Bar */}
           <div className="flex-1 max-w-2xl mx-2 md:mx-6 relative" ref={searchBarRef}>
             <form
               onSubmit={(e) => handleSearchSubmit(e)}
@@ -236,7 +231,7 @@ function NavbarContent() {
               </div>
             </form>
 
-            {/* --- AUTOCOMPLETE DROPDOWN POPOVER --- */}
+            {/* AUTOCOMPLETE DROPDOWN */}
             <AnimatePresence>
               {isSearchFocused && (
                 <motion.div
@@ -246,7 +241,6 @@ function NavbarContent() {
                   transition={{ duration: 0.15 }}
                   className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 max-h-[80vh] overflow-y-auto custom-scrollbar"
                 >
-                  {/* CASE 1: Query Typed & Results Loading/Available */}
                   {searchQuery.trim().length > 0 ? (
                     <div className="p-3 sm:p-4">
                       {isLoading && suggestions.length === 0 ? (
@@ -269,7 +263,6 @@ function NavbarContent() {
                                 onClick={() => setIsSearchFocused(false)}
                                 className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-pink-50/80 transition-all group border border-transparent hover:border-pink-100 relative"
                               >
-                                {/* Thumbnail Image */}
                                 <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-1 border border-gray-100 relative">
                                   <img
                                     src={item.image}
@@ -278,7 +271,6 @@ function NavbarContent() {
                                   />
                                 </div>
 
-                                {/* Product Info */}
                                 <div className="flex flex-col min-w-0 flex-1">
                                   <div className="flex items-center gap-2">
                                     <h4 className="text-xs sm:text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-[#d81b60] transition-colors">
@@ -335,7 +327,6 @@ function NavbarContent() {
                       )}
                     </div>
                   ) : (
-                    /* CASE 2: Search empty -> Popular Searches */
                     <div className="p-4">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
                         <TrendingUp className="w-3.5 h-3.5 text-[#d81b60]" />
@@ -389,7 +380,7 @@ function NavbarContent() {
           </div>
         </div>
 
-        {/* --- DESKTOP NAVIGATION STRIP --- */}
+        {/* --- DYNAMIC DESKTOP NAVIGATION STRIP --- */}
         <div className="hidden md:flex w-full bg-white border-t border-gray-100 items-center justify-center h-11 gap-8 lg:gap-12 relative z-40">
           {DESKTOP_NAV_ITEMS.map((item) => (
             <div
@@ -412,128 +403,16 @@ function NavbarContent() {
           ))}
         </div>
 
-        {/* --- MEGA MENU DROPDOWNS --- */}
-        <AnimatePresence>
-          {activeMegaMenu === "categories" && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              transition={{ duration: 0.15 }}
-              className="absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 z-30 hidden md:block"
-            >
-              <div className="max-w-[1400px] mx-auto flex h-[420px]">
-                <div className="w-[20%] bg-gray-50 border-r border-gray-100 py-4 flex flex-col">
-                  {Object.keys(MEGA_MENU_CATEGORIES).map((cat) => (
-                    <button
-                      key={cat}
-                      onMouseEnter={() => setActiveCategoryTab(cat)}
-                      className={`text-left px-6 py-3 text-[13px] font-semibold transition-colors flex justify-between items-center ${
-                        activeCategoryTab === cat
-                          ? "bg-white text-[#d81b60] border-l-4 border-[#d81b60]"
-                          : "text-gray-700 hover:bg-gray-100 border-l-4 border-transparent"
-                      }`}
-                    >
-                      {cat}
-                      {activeCategoryTab === cat && <ChevronRight className="w-4 h-4" />}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="w-[80%] bg-white p-8 grid grid-cols-4 gap-8 overflow-y-auto">
-                  {MEGA_MENU_CATEGORIES[activeCategoryTab as keyof typeof MEGA_MENU_CATEGORIES].map((col, idx) => (
-                    <div key={idx} className="flex flex-col">
-                      <h3 className="font-bold text-gray-900 text-[13px] uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">
-                        {col.title}
-                      </h3>
-                      <div className="flex flex-col gap-2.5">
-                        {col.links.map((link, lIdx) => (
-                          <Link
-                            key={lIdx}
-                            href={`/shop?category=${link.toLowerCase()}`}
-                            className="text-gray-500 hover:text-[#d81b60] text-[13px] transition-colors hover:translate-x-1 duration-200"
-                            onClick={() => setActiveMegaMenu(null)}
-                          >
-                            {link}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeMegaMenu === "brands" && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              transition={{ duration: 0.15 }}
-              className="absolute top-full left-0 w-full bg-white shadow-xl border-t border-gray-100 z-30 hidden md:block"
-            >
-              <div className="max-w-[1400px] mx-auto flex h-[420px]">
-                <div className="w-[25%] bg-white border-r border-gray-100 p-6 flex flex-col h-full">
-                  <h3 className="font-bold text-gray-900 text-xs tracking-wider uppercase mb-4">Top Brands</h3>
-                  <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-2 custom-scrollbar">
-                    {MEGA_MENU_BRANDS.popular.map((brand, i) => (
-                      <Link
-                        key={i}
-                        href={`/brands/${brand.toLowerCase()}`}
-                        className="text-[13px] text-gray-600 hover:text-[#d81b60]"
-                        onClick={() => setActiveMegaMenu(null)}
-                      >
-                        {brand}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="w-[75%] bg-gray-50/50 p-8 flex flex-col">
-                  <div className="flex gap-4 mb-6">
-                    <button
-                      onMouseEnter={() => setActiveBrandTab("popular")}
-                      className={`px-8 py-2 text-xs font-bold tracking-widest uppercase rounded-sm transition-colors ${
-                        activeBrandTab === "popular"
-                          ? "bg-[#d81b60] text-white"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                      }`}
-                    >
-                      Popular
-                    </button>
-                    <button
-                      onMouseEnter={() => setActiveBrandTab("luxe")}
-                      className={`px-8 py-2 text-xs font-bold tracking-widest uppercase rounded-sm transition-colors ${
-                        activeBrandTab === "luxe"
-                          ? "bg-[#d81b60] text-white"
-                          : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                      }`}
-                    >
-                      Luxe
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-4">
-                    {MEGA_MENU_BRANDS[activeBrandTab as keyof typeof MEGA_MENU_BRANDS].map((brand, idx) => (
-                      <Link
-                        key={idx}
-                        href={`/brands/${brand.toLowerCase()}`}
-                        onClick={() => setActiveMegaMenu(null)}
-                        className="bg-white border border-gray-100 hover:border-pink-200 rounded-lg p-4 flex items-center justify-center text-center shadow-sm hover:shadow-md transition-all h-16 group"
-                      >
-                        <span className="text-xs font-bold text-gray-700 group-hover:text-[#d81b60]">{brand}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* --- DYNAMIC MEGA MENU DROPDOWN --- */}
+        <MegaMenu
+          activeMegaMenu={activeMegaMenu}
+          setActiveMegaMenu={setActiveMegaMenu}
+          categories={menuCategories}
+          brands={menuBrands}
+        />
       </header>
 
-      {/* --- DIMMED BACKDROP WHILE SEARCH IS FOCUSED --- */}
+      {/* BACKDROP */}
       <AnimatePresence>
         {isSearchFocused && (
           <motion.div
@@ -546,7 +425,7 @@ function NavbarContent() {
         )}
       </AnimatePresence>
 
-      {/* --- MOBILE SIDEBAR DRAWER --- */}
+      {/* MOBILE DRAWER WITH DYNAMIC CATEGORIES */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -596,19 +475,5 @@ function NavbarContent() {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-export default function Navbar() {
-  return (
-    <Suspense
-      fallback={
-        <header className="sticky top-0 w-full bg-white z-50 border-b border-gray-200 shadow-sm">
-          <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4 bg-white" />
-        </header>
-      }
-    >
-      <NavbarContent />
-    </Suspense>
   );
 }
