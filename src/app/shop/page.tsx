@@ -15,7 +15,7 @@ export default async function ShopPage({
   const params = await searchParams;
   const categorySlug = (params?.category as string) || "";
 
-  let products = [];
+  let products:any[] = [];
   let categoryId = "";
 
   try {

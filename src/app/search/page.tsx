@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { getProductImage } from "@/app/page";
+import { getProductImage } from "@/lib/utils";
 
 // Force dynamic so it always fetches fresh data based on the URL query
 export const dynamic = "force-dynamic";

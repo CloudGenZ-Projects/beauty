@@ -5,8 +5,8 @@ import HomePageClient from "@/components/HomePageClient";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  let products = [];
-  let categories = [];
+  let products:any[] = [];
+  let categories:any[] = [];
   let heroSlides = [];
 
   try {
