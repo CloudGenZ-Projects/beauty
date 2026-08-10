@@ -291,11 +291,11 @@ export default function Navbar() {
 
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs sm:text-sm font-black text-gray-900">
-                                      ₹{Number(item.price).toLocaleString()}
+                                      ${Number(item.price).toLocaleString()}
                                     </span>
                                     {item.on_sale && Number(item.regular_price) > Number(item.price) && (
                                       <span className="text-[10px] sm:text-xs text-gray-400 line-through font-semibold">
-                                        ₹{Number(item.regular_price).toLocaleString()}
+                                        ${Number(item.regular_price).toLocaleString()}
                                       </span>
                                     )}
                                   </div>

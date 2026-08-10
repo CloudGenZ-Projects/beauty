@@ -63,11 +63,11 @@ export default function ClientShop({ initialProducts, category }: ClientShopProp
                          <div className="flex items-center justify-center gap-2 mb-3">
                             {originalPrice !== currentPrice && (
                                 <span className="text-[10px] md:text-xs text-gray-400 line-through">
-                                  ₹{Number(originalPrice).toLocaleString()}
+                                  ${Number(originalPrice).toLocaleString()}
                                 </span>
                             )}
                             <span className="text-sm md:text-base font-bold text-[#8e24aa]">
-                              ₹{Number(currentPrice).toLocaleString()}
+                              ${Number(currentPrice).toLocaleString()}
                             </span>
                          </div>
                         

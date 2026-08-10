@@ -254,7 +254,7 @@ export default function DynamicOffersPage() {
                 const isPercent = coupon.discount_type === "percent";
                 const discountTitle = isPercent
                   ? `${coupon.amount}% OFF`
-                  : `FLAT ₹${coupon.amount} OFF`;
+                  : `FLAT $${coupon.amount} OFF`;
 
                 return (
                   <div
@@ -264,7 +264,7 @@ export default function DynamicOffersPage() {
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-widest text-pink-400 block mb-1">
                         {Number(coupon.minimum_amount) > 0
-                          ? `Min. spend ₹${Number(coupon.minimum_amount).toLocaleString()}`
+                          ? `Min. spend $${Number(coupon.minimum_amount).toLocaleString()}`
                           : "No Minimum Spend Required"}
                       </span>
                       <h3 className="text-xl font-black tracking-tight mb-2">
@@ -351,7 +351,7 @@ export default function DynamicOffersPage() {
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              Under ₹999
+              Under $999
             </button>
           </div>
         </div>
@@ -426,11 +426,11 @@ export default function DynamicOffersPage() {
                     {/* Price & Savings */}
                     <div className="flex items-center gap-2 mt-auto mb-3">
                       <span className="text-sm sm:text-base font-black text-gray-900">
-                        ₹{salePrice.toLocaleString()}
+                        ${salePrice.toLocaleString()}
                       </span>
                       {regPrice > salePrice && (
                         <span className="text-xs text-gray-400 line-through font-semibold">
-                          ₹{regPrice.toLocaleString()}
+                          ${regPrice.toLocaleString()}
                         </span>
                       )}
                     </div>

@@ -222,7 +222,7 @@ export default function ClientCart({ initialCart }: { initialCart: CartItem[] })
 
                       <div className="flex items-center gap-3 mt-1.5">
                         <span className="font-black text-sm sm:text-base text-gray-900">
-                          ₹{Number(item.price).toLocaleString()}
+                          ${Number(item.price).toLocaleString()}
                         </span>
                         <span className="text-[10px] uppercase font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                           In Stock
@@ -258,7 +258,7 @@ export default function ClientCart({ initialCart }: { initialCart: CartItem[] })
                       <div className="text-right">
                         <span className="block text-[10px] text-gray-400 font-bold uppercase sm:hidden">Total</span>
                         <span className="font-black text-sm sm:text-base text-gray-900">
-                          ₹{itemTotal.toLocaleString()}
+                          ${itemTotal.toLocaleString()}
                         </span>
                       </div>
 
@@ -338,7 +338,7 @@ export default function ClientCart({ initialCart }: { initialCart: CartItem[] })
                         <span className="text-[10px] text-gray-500 font-semibold">
                           {appliedCoupon.discountType === "percent"
                             ? `${appliedCoupon.rawValue}% discount applied`
-                            : `₹${appliedCoupon.rawValue} off applied`}
+                            : `$${appliedCoupon.rawValue} off applied`}
                         </span>
                       </div>
                     </div>
@@ -392,13 +392,13 @@ export default function ClientCart({ initialCart }: { initialCart: CartItem[] })
               <div className="space-y-3.5 text-xs font-semibold text-gray-600 border-t border-b border-gray-100 py-4">
                 <div className="flex justify-between">
                   <span>Bag Subtotal</span>
-                  <span className="font-bold text-gray-900">₹{rawTotalPrice.toLocaleString()}</span>
+                  <span className="font-bold text-gray-900">${rawTotalPrice.toLocaleString()}</span>
                 </div>
 
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-[#d81b60]">
                     <span>Promo Discount</span>
-                    <span className="font-black">-₹{discountAmount.toLocaleString()}</span>
+                    <span className="font-black">-${discountAmount.toLocaleString()}</span>
                   </div>
                 )}
 
@@ -420,7 +420,7 @@ export default function ClientCart({ initialCart }: { initialCart: CartItem[] })
                   <span className="text-[10px] text-gray-400">Final price on checkout</span>
                 </div>
                 <span className="text-3xl font-black text-[#d81b60]">
-                  ₹{finalTotal.toLocaleString()}
+                  ${finalTotal.toLocaleString()}
                 </span>
               </div>
 
@@ -461,7 +461,7 @@ export default function ClientCart({ initialCart }: { initialCart: CartItem[] })
         <div className="max-w-md mx-auto flex items-center justify-between gap-4">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Total</span>
-            <span className="text-xl font-black text-[#d81b60]">₹{finalTotal.toLocaleString()}</span>
+            <span className="text-xl font-black text-[#d81b60]">${finalTotal.toLocaleString()}</span>
           </div>
 
           <Link

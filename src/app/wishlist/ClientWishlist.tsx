@@ -107,7 +107,7 @@ export default function ClientWishlist({ initialWishlist }: { initialWishlist: W
 
                 <div className="mt-auto pt-2">
                   <div className="text-sm sm:text-base font-black text-gray-900 mb-3">
-                    ₹{Number(item.price).toLocaleString()}
+                    ${Number(item.price).toLocaleString()}
                   </div>
 
                   <button

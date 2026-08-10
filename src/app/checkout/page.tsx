@@ -220,7 +220,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
                 <p className="text-sm font-black text-[#d81b60]">
-                  ₹{(Number(item.price) * item.quantity).toLocaleString()}
+                  ${(Number(item.price) * item.quantity).toLocaleString()}
                 </p>
               </div>
             ))}
@@ -228,7 +228,7 @@ export default function CheckoutPage() {
           <div className="border-t border-gray-200 pt-6 mb-6">
             <div className="flex justify-between font-black text-2xl text-gray-900">
               <span>Total</span>
-              <span>₹{totalPrice.toLocaleString()}</span>
+              <span>${totalPrice.toLocaleString()}</span>
             </div>
           </div>
           <button

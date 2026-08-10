@@ -294,11 +294,11 @@ export default function SingleBrandPage() {
                     {/* Price Strip */}
                     <div className="flex items-center gap-2 mt-auto mb-3">
                       <span className="text-sm sm:text-base font-black text-gray-900">
-                        ₹{Number(product.price).toLocaleString()}
+                        ${Number(product.price).toLocaleString()}
                       </span>
                       {product.on_sale && Number(product.regular_price) > Number(product.price) && (
                         <span className="text-xs text-gray-400 line-through font-semibold">
-                          ₹{Number(product.regular_price).toLocaleString()}
+                          ${Number(product.regular_price).toLocaleString()}
                         </span>
                       )}
                     </div>

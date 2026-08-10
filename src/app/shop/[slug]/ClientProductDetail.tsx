@@ -281,15 +281,15 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
               {/* Price & Discount */}
               <div className="flex items-baseline gap-3 mb-6">
                 <span className="text-3xl sm:text-4xl font-black text-gray-900">
-                  ₹{Number(currentPrice).toLocaleString()}
+                  ${Number(currentPrice).toLocaleString()}
                 </span>
                 {hasDiscount && (
                   <>
                     <span className="text-lg text-gray-400 line-through font-semibold">
-                      ₹{Number(regPrice).toLocaleString()}
+                      ${Number(regPrice).toLocaleString()}
                     </span>
                     <span className="text-xs font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-md border border-red-100">
-                      Save ₹{(regPrice - salePrice).toLocaleString()}
+                      Save ${(regPrice - salePrice).toLocaleString()}
                     </span>
                   </>
                 )}

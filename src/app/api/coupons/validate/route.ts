@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     if (minAmount > 0 && subtotal < minAmount) {
       return NextResponse.json({
         success: false,
-        message: `Minimum spend of ₹${minAmount.toLocaleString()} required for code "${coupon.code.toUpperCase()}".`,
+        message: `Minimum spend of $${minAmount.toLocaleString()} required for code "${coupon.code.toUpperCase()}".`,
       });
     }
 
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     if (maxAmount > 0 && subtotal > maxAmount) {
       return NextResponse.json({
         success: false,
-        message: `Maximum spend limit of ₹${maxAmount.toLocaleString()} exceeded for this coupon.`,
+        message: `Maximum spend limit of $${maxAmount.toLocaleString()} exceeded for this coupon.`,
       });
     }
 
