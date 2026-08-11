@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import {
-  Sparkles,
   Clock,
   Copy,
   Check,
@@ -57,9 +56,6 @@ export default function DynamicOffersPage() {
   >("all");
   const [addedItems, setAddedItems] = useState<{ [key: number]: boolean }>({});
 
-  // Dynamic Countdown Timer State
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
-
   // 1. Fetch Dynamic Offers Data
   useEffect(() => {
     async function fetchOffersData() {
@@ -70,8 +66,6 @@ export default function DynamicOffersPage() {
           const data = await res.json();
           setCoupons(data.coupons || []);
           setProducts(data.products || []);
-
-          setupDynamicTimer(data.coupons || []);
         }
       } catch (err) {
         console.error("Error loading offers:", err);
@@ -82,32 +76,15 @@ export default function DynamicOffersPage() {
     fetchOffersData();
   }, []);
 
-  // Compute Timer dynamically from WooCommerce Coupon Expiration or End of Day
-  const setupDynamicTimer = (couponList: DynamicCoupon[]) => {
-    let targetTime = new Date().setHours(23, 59, 59, 999);
-
-    const expiringCoupon = couponList.find((c) => c.date_expires !== null);
-    if (expiringCoupon && expiringCoupon.date_expires) {
-      targetTime = new Date(expiringCoupon.date_expires).getTime();
-    }
-
-    const updateTimer = () => {
-      const now = new Date().getTime();
-      const diff = targetTime - now;
-
-      if (diff > 0) {
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeft({ hours, minutes, seconds });
-      } else {
-        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
-      }
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
+  // Format Coupon Expiry Date
+  const formatExpiryDate = (dateString: string | null) => {
+    if (!dateString) return "No Expiry";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   // Copy Coupon Action
@@ -143,7 +120,7 @@ export default function DynamicOffersPage() {
     }
   };
 
-  // Add To Cart Action (Supports addToCart, addItem, or addItemToCart dynamically)
+  // Add To Cart Action
   const handleAddToCart = (e: React.MouseEvent, product: Product) => {
     e.preventDefault();
     e.stopPropagation();
@@ -187,55 +164,23 @@ export default function DynamicOffersPage() {
     <div className="bg-gray-50/60 min-h-screen py-8">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8">
         
-        {/* HERO BANNER & DYNAMIC COUNTDOWN TIMER */}
+        {/* HERO BANNER (Timer Removed) */}
         <div className="bg-gradient-to-br from-gray-950 via-gray-900 to-[#4a0823] text-white rounded-3xl p-6 sm:p-12 mb-10 shadow-2xl relative overflow-hidden border border-gray-800">
           <div className="absolute -top-24 -right-24 w-96 h-96 bg-[#d81b60]/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="text-center lg:text-left max-w-2xl">
-              <div className="inline-flex items-center gap-2 bg-pink-500/20 text-pink-300 border border-pink-500/30 text-xs font-bold px-3.5 py-1.5 rounded-full mb-4 uppercase tracking-widest">
-                <Flame className="w-4 h-4 text-pink-500 animate-pulse" /> Live Store Offers
-              </div>
-
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight uppercase leading-none mb-4">
-                Exclusive <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-300 to-purple-300">Beauty Deals</span>
-              </h1>
-
-              <p className="text-xs sm:text-sm text-gray-300 font-medium max-w-xl">
-                Unbeatable discounts on bestselling skincare, makeup essentials & luxury fragrances straight from our WooCommerce catalog.
-              </p>
+          <div className="relative z-10 flex flex-col justify-center items-center text-center max-w-3xl mx-auto py-6">
+            <div className="inline-flex items-center gap-2 bg-pink-500/20 text-pink-300 border border-pink-500/30 text-xs font-bold px-3.5 py-1.5 rounded-full mb-6 uppercase tracking-widest">
+              <Flame className="w-4 h-4 text-pink-500 animate-pulse" /> Live Store Offers
             </div>
 
-            {/* Dynamic Countdown Box */}
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl p-5 sm:p-6 text-center shadow-xl min-w-[280px]">
-              <div className="flex items-center justify-center gap-2 text-xs font-bold text-pink-300 uppercase tracking-widest mb-3">
-                <Clock className="w-4 h-4" /> Deals Expire In
-              </div>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight uppercase leading-none mb-6">
+              Exclusive <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-rose-300 to-purple-300">Beauty Deals</span>
+            </h1>
 
-              <div className="flex items-center justify-center gap-3 text-gray-900">
-                <div className="bg-white rounded-xl py-2 px-3.5 shadow-md flex flex-col items-center min-w-[54px]">
-                  <span className="text-xl sm:text-2xl font-black">
-                    {String(timeLeft.hours).padStart(2, "0")}
-                  </span>
-                  <span className="text-[9px] font-bold text-gray-400 uppercase">Hours</span>
-                </div>
-                <span className="text-2xl font-black text-white">:</span>
-                <div className="bg-white rounded-xl py-2 px-3.5 shadow-md flex flex-col items-center min-w-[54px]">
-                  <span className="text-xl sm:text-2xl font-black">
-                    {String(timeLeft.minutes).padStart(2, "0")}
-                  </span>
-                  <span className="text-[9px] font-bold text-gray-400 uppercase">Mins</span>
-                </div>
-                <span className="text-2xl font-black text-white">:</span>
-                <div className="bg-white rounded-xl py-2 px-3.5 shadow-md flex flex-col items-center min-w-[54px]">
-                  <span className="text-xl sm:text-2xl font-black text-[#d81b60]">
-                    {String(timeLeft.seconds).padStart(2, "0")}
-                  </span>
-                  <span className="text-[9px] font-bold text-gray-400 uppercase">Secs</span>
-                </div>
-              </div>
-            </div>
+            <p className="text-sm sm:text-base text-gray-300 font-medium max-w-2xl">
+              Unbeatable discounts on bestselling skincare, makeup essentials & luxury fragrances straight from our WooCommerce catalog.
+            </p>
           </div>
         </div>
 
@@ -262,12 +207,21 @@ export default function DynamicOffersPage() {
                     className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden flex flex-col justify-between border border-gray-700"
                   >
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-pink-400 block mb-1">
-                        {Number(coupon.minimum_amount) > 0
-                          ? `Min. spend $${Number(coupon.minimum_amount).toLocaleString()}`
-                          : "No Minimum Spend Required"}
-                      </span>
-                      <h3 className="text-xl font-black tracking-tight mb-2">
+                      {/* Sub-header with Min Spend & Expiry Date */}
+                      <div className="flex justify-between items-start mb-2 gap-2 flex-wrap">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-pink-400">
+                          {Number(coupon.minimum_amount) > 0
+                            ? `Min. spend $${Number(coupon.minimum_amount).toLocaleString()}`
+                            : "No Min Spend"}
+                        </span>
+                        
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-800/50 px-2 py-1 rounded">
+                          <Clock className="w-3 h-3 text-[#d81b60]" />
+                          {formatExpiryDate(coupon.date_expires)}
+                        </span>
+                      </div>
+
+                      <h3 className="text-xl font-black tracking-tight mb-2 mt-2">
                         {discountTitle}
                       </h3>
                       <p className="text-xs text-gray-300 font-medium mb-6 line-clamp-2">

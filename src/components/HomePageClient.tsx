@@ -249,12 +249,24 @@ export default function HomePageClient({
                   price: rawDeal.acf?.deal_value || rawDeal.deal_value || rawDeal.price || "0",
                   type: rawDeal.acf?.deal_type || rawDeal.deal_type || rawDeal.type || "under",
                   highlight: rawDeal.acf?.highlight || rawDeal.highlight || false,
-                  color: rawDeal.acf?.color || rawDeal.color || "border-[#ffb74d]",
-                  link: rawDeal.acf?.link || rawDeal.link || null
+                  color: rawDeal.acf?.color || rawDeal.color || "border-[#ffb74d]"
                 };
 
-                const targetProduct = products.length > 0 ? products[idx % products.length] : null;
-                const linkHref = deal.link || (targetProduct ? `/shop/${targetProduct.slug || targetProduct.id}` : "/shop");
+                // DYNAMIC PRICE FILTERING LOGIC
+                let linkHref = "/shop";
+                const dealPrice = parseFloat(deal.price);
+
+                if (!isNaN(dealPrice) && dealPrice > 0) {
+                  if (deal.type === "under") {
+                    linkHref = `/shop?max_price=${dealPrice}`;
+                  } else if (deal.type === "flat") {
+                    linkHref = `/shop?min_price=${dealPrice}&max_price=${dealPrice}`;
+                  } else {
+                    linkHref = `/shop?on_sale=true`;
+                  }
+                } else if (deal.type === "percentage") {
+                  linkHref = `/shop?on_sale=true`;
+                }
 
                 return (
                   <Link href={linkHref} prefetch={false} key={rawDeal.id || idx} className="flex flex-col items-center gap-2 cursor-pointer group snap-start">

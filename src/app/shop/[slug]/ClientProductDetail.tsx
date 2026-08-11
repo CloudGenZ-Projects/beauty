@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
@@ -33,6 +33,9 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
     ? product.images.map((img: any) => img.src)
     : [getProductImage(product)];
 
+  // Safe Initial Reviews Array
+  const safeInitialReviews = Array.isArray(initialReviews) ? initialReviews : [];
+
   // States
   const [selectedImgIndex, setSelectedImgIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -40,14 +43,26 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
   const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string }>({});
   const [copiedLink, setCopiedLink] = useState(false);
 
-  // Reviews States
-  const [reviews, setReviews] = useState<any[]>(initialReviews);
+  // Reviews States (Always guarantee an Array)
+  const [reviews, setReviews] = useState<any[]>(safeInitialReviews);
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [reviewForm, setReviewForm] = useState({ reviewer: "", reviewer_email: "", review: "", rating: 5 });
 
   // Custom Popup State
   const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
   const popupTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync initial reviews safely without erasing local submitted reviews
+  useEffect(() => {
+    if (Array.isArray(initialReviews) && initialReviews.length > 0) {
+      setReviews((prev) => {
+        const currentList = Array.isArray(prev) ? prev : [];
+        const existingIds = new Set(currentList.map((r) => r.id));
+        const newFromProps = initialReviews.filter((r) => !existingIds.has(r.id));
+        return [...currentList, ...newFromProps];
+      });
+    }
+  }, [initialReviews]);
 
   const isLiked = isInWishlist ? isInWishlist(product.id) : false;
 
@@ -84,26 +99,37 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  // Review Submission
+  // Review Submission Logic (Guaranteed State Append)
+// Review Submission Logic
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setLoadingReviews(true);
-      await fetch('/api/reviews', {
+      
+      const submitRes = await fetch('/api/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: product.id, ...reviewForm })
+        body: JSON.stringify({ 
+          product_id: product.id, 
+          ...reviewForm 
+        })
       });
+
+      const resData = await submitRes.json();
+
+      if (!submitRes.ok) {
+        // Show real error from WooCommerce API in Toast Popup
+        throw new Error(resData.error || "Failed to submit review");
+      }
+
+      // Add actual created WooCommerce review object into state
+      setReviews((prev) => [resData, ...(Array.isArray(prev) ? prev : [])]);
+
       showPopup("Review submitted successfully!", "success");
       setReviewForm({ reviewer: "", reviewer_email: "", review: "", rating: 5 });
-      
-      const res = await fetch(`/api/reviews?product_id=${product.id}`);
-      const newReviews = await res.json();
-      setReviews(newReviews);
-      
-      router.refresh(); 
-    } catch (error) {
-      showPopup("Failed to submit review.", "error");
+
+    } catch (error: any) {
+      showPopup(error.message || "Failed to submit review.", "error");
     } finally {
       setLoadingReviews(false);
     }
@@ -145,6 +171,9 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
       );
     }
   };
+
+  // Ensure reviews list is strictly an Array for JSX
+  const displayReviews = Array.isArray(reviews) ? reviews : [];
 
   return (
     <div className="bg-[#fcfcfc] min-h-screen pb-16 pt-4 sm:pt-8 relative">
@@ -196,7 +225,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                   className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500" 
                 />
 
-                {/* Prev / Next Slider Arrows (Only if multiple images exist) */}
+                {/* Prev / Next Slider Arrows */}
                 {productImages.length > 1 && (
                   <>
                     <button
@@ -262,7 +291,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                 <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200/60 text-amber-900">
                   <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                   <span className="font-bold">4.9</span>
-                  <span className="text-gray-400 font-normal">({reviews.length} reviews)</span>
+                  <span className="text-gray-400 font-normal">({displayReviews.length} reviews)</span>
                 </div>
 
                 {product.sku && (
@@ -295,7 +324,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                 )}
               </div>
 
-              {/* Dynamic Product Attributes / Variations (e.g. Shade / Size) */}
+              {/* Dynamic Product Attributes */}
               {Array.isArray(product.attributes) && product.attributes.length > 0 && (
                 <div className="space-y-4 mb-6 bg-gray-50/80 p-4 rounded-2xl border border-gray-100">
                   {product.attributes.map((attr: any) => (
@@ -416,7 +445,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                 activeTab === "reviews" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
-              Customer Reviews ({reviews.length})
+              Customer Reviews ({displayReviews.length})
               {activeTab === "reviews" && <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#d81b60]" />}
             </button>
           </div>
@@ -432,7 +461,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
             </div>
           )}
 
-          {/* TAB 2: SPECIFICATIONS & DETAILED INFO (UPDATED) */}
+          {/* TAB 2: SPECIFICATIONS */}
           {activeTab === "specs" && (
             <div className="max-w-4xl">
               <div className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50/50 p-1 sm:p-3">
@@ -444,32 +473,18 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 bg-white rounded-xl shadow-sm">
-                    
-                    {/* ID */}
                     {product.id && (
                       <tr>
                         <td className="py-3.5 px-4 font-bold text-gray-600">Product ID</td>
                         <td className="py-3.5 px-4 font-mono font-medium text-gray-800">#{product.id}</td>
                       </tr>
                     )}
-
-                    {/* SKU */}
                     {product.sku && (
                       <tr>
                         <td className="py-3.5 px-4 font-bold text-gray-600">SKU / Item Code</td>
                         <td className="py-3.5 px-4 font-mono font-medium text-gray-800">{product.sku}</td>
                       </tr>
                     )}
-
-                    {/* Product Type */}
-                    {product.type && (
-                      <tr>
-                        <td className="py-3.5 px-4 font-bold text-gray-600">Product Type</td>
-                        <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">{product.type} Product</td>
-                      </tr>
-                    )}
-
-                    {/* Categories */}
                     {Array.isArray(product.categories) && product.categories.length > 0 && (
                       <tr>
                         <td className="py-3.5 px-4 font-bold text-gray-600">Categories</td>
@@ -484,93 +499,21 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                         </td>
                       </tr>
                     )}
-
-                    {/* Tags */}
-                    {Array.isArray(product.tags) && product.tags.length > 0 && (
-                      <tr>
-                        <td className="py-3.5 px-4 font-bold text-gray-600">Tags / Keywords</td>
-                        <td className="py-3.5 px-4 font-medium text-gray-800">
-                          <div className="flex flex-wrap gap-1.5">
-                            {product.tags.map((tag: any) => (
-                              <span key={tag.id} className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-md text-xs font-medium">
-                                #{tag.name}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-
-                    {/* Weight */}
                     {product.weight && (
                       <tr>
                         <td className="py-3.5 px-4 font-bold text-gray-600">Weight</td>
                         <td className="py-3.5 px-4 font-medium text-gray-800">{product.weight} kg</td>
                       </tr>
                     )}
-
-                    {/* Dimensions */}
-                    {product.dimensions && (product.dimensions.length || product.dimensions.width || product.dimensions.height) && (
-                      <tr>
-                        <td className="py-3.5 px-4 font-bold text-gray-600">Dimensions (L × W × H)</td>
-                        <td className="py-3.5 px-4 font-medium text-gray-800">
-                          {product.dimensions.length || "0"} × {product.dimensions.width || "0"} × {product.dimensions.height || "0"} cm
-                        </td>
-                      </tr>
-                    )}
-
-                    {/* Stock Status & Quantity */}
                     <tr>
                       <td className="py-3.5 px-4 font-bold text-gray-600">Stock Status</td>
                       <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">
                         <span className={`inline-flex items-center gap-1.5 font-bold ${product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}`}>
                           <span className={`w-2 h-2 rounded-full ${product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500"}`} />
                           {product.stock_status === "outofstock" ? "Out of Stock" : "In Stock"}
-                          {product.stock_quantity !== null && product.stock_quantity !== undefined && ` (${product.stock_quantity} available)`}
                         </span>
                       </td>
                     </tr>
-
-                    {/* Shipping Class */}
-                    {product.shipping_class && (
-                      <tr>
-                        <td className="py-3.5 px-4 font-bold text-gray-600">Shipping Class</td>
-                        <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">{product.shipping_class}</td>
-                      </tr>
-                    )}
-
-                    {/* Tax Status */}
-                    {product.tax_status && (
-                      <tr>
-                        <td className="py-3.5 px-4 font-bold text-gray-600">Tax Status</td>
-                        <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">{product.tax_status}</td>
-                      </tr>
-                    )}
-
-                    {/* Dynamic WooCommerce Attributes (Color, Size, Material, Shade, etc.) */}
-                    {Array.isArray(product.attributes) &&
-                      product.attributes.map((attr: any) => (
-                        <tr key={attr.id || attr.name}>
-                          <td className="py-3.5 px-4 font-bold text-gray-600 capitalize">{attr.name}</td>
-                          <td className="py-3.5 px-4 font-medium text-gray-800">
-                            {Array.isArray(attr.options) ? attr.options.join(", ") : String(attr.options || "")}
-                          </td>
-                        </tr>
-                      ))}
-
-                    {/* Custom Meta Data (If provided by backend WooCommerce plugin) */}
-                    {Array.isArray(product.meta_data) &&
-                      product.meta_data
-                        .filter((meta: any) => !meta.key.startsWith("_") && meta.value)
-                        .map((meta: any) => (
-                          <tr key={meta.id || meta.key}>
-                            <td className="py-3.5 px-4 font-bold text-gray-600 capitalize">{meta.key.replace(/_/g, " ")}</td>
-                            <td className="py-3.5 px-4 font-medium text-gray-800">
-                              {typeof meta.value === "object" ? JSON.stringify(meta.value) : String(meta.value)}
-                            </td>
-                          </tr>
-                        ))}
-
                   </tbody>
                 </table>
               </div>
@@ -580,64 +523,65 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           {/* TAB 3: SHIPPING */}
           {activeTab === "shipping" && (
             <div className="space-y-4 text-xs sm:text-sm text-gray-600 leading-relaxed max-w-2xl">
-              <p className="font-semibold text-gray-800">
-                📦 Express Domestic Shipping (2-4 Business Days)
-              </p>
-              <p>
-                All orders are dispatched from our luxury atelier warehouse within 24 hours. You will receive a live tracking link via SMS & email as soon as your package ships.
-              </p>
-              <p className="font-semibold text-gray-800 pt-2">
-                🔄 Easy 7-Day Hassle-Free Returns
-              </p>
-              <p>
-                If your order arrives damaged or incorrect, our concierge team will arrange a complimentary replacement or instant refund within 7 days.
-              </p>
+              <p className="font-semibold text-gray-800">📦 Express Domestic Shipping (2-4 Business Days)</p>
+              <p>All orders are dispatched from our luxury atelier warehouse within 24 hours.</p>
             </div>
           )}
 
           {/* TAB 4: REVIEWS */}
+        
           {activeTab === "reviews" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 relative">
               {/* Existing Reviews */}
-              <div>
+              <div className="w-full">
                 {loadingReviews ? (
                   <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#d81b60]" /></div>
-                ) : reviews.length === 0 ? (
-                  <p className="text-gray-500 italic text-sm">No reviews yet. Be the first to review this product!</p>
+                ) : displayReviews.length === 0 ? (
+                  <p className="text-gray-500 italic text-sm bg-gray-50 p-6 rounded-2xl text-center border border-gray-100">
+                    No reviews yet. Be the first to review this product!
+                  </p>
                 ) : (
-                  <div className="space-y-6 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
-                    {reviews.map((rev) => (
-                      <div key={rev.id} className="border-b border-gray-100 pb-6">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <UserCircle className="w-8 h-8 text-gray-300" />
-                            <span className="font-bold text-gray-900 text-sm">{rev.reviewer}</span>
+                  /* Add overscroll-contain here to stop main page from scrolling */
+                  <div className="space-y-6 max-h-[500px] overflow-y-auto overscroll-contain pr-4 custom-scrollbar pb-4">
+                    {displayReviews.map((rev: any, index: number) => (
+                      <div key={rev.id || index} className="border-b border-gray-100 pb-6 last:border-b-0">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-[#fff7f9] text-[#d81b60] flex items-center justify-center font-bold border border-pink-100 shadow-sm">
+                              {rev.reviewer ? rev.reviewer.charAt(0).toUpperCase() : <UserCircle className="w-6 h-6" />}
+                            </div>
+                            <span className="font-bold text-gray-900 text-sm">{rev.reviewer || "Anonymous"}</span>
                           </div>
-                          <div className="flex">
+                          <div className="flex bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">
                             {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`w-3.5 h-3.5 ${i < rev.rating ? "text-yellow-400 fill-current" : "text-gray-200"}`} />
+                              <Star key={i} className={`w-3.5 h-3.5 ${i < (Number(rev.rating) || 5) ? "text-amber-400 fill-current" : "text-gray-300"}`} />
                             ))}
                           </div>
                         </div>
-                        <div className="text-gray-600 text-xs sm:text-sm pl-10" dangerouslySetInnerHTML={{ __html: rev.review }} />
+                        <div 
+                          className="text-gray-600 text-sm pl-12 leading-relaxed" 
+                          dangerouslySetInnerHTML={{ __html: rev.review || "" }} 
+                        />
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Write a Review Form */}
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Write a Review</h3>
+              {/* Write a Review Form - Made Sticky */}
+              <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 h-fit sticky top-24 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider flex items-center gap-2">
+                  <Star className="w-4 h-4 text-[#d81b60] fill-current" /> Write a Review
+                </h3>
                 <form onSubmit={handleReviewSubmit} className="space-y-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs font-bold text-gray-600">Your Rating:</span>
-                    <div className="flex">
+                  <div className="flex items-center justify-between mb-4 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <span className="text-xs font-bold text-gray-600 uppercase">Your Rating</span>
+                    <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star 
                           key={star} 
                           onClick={() => setReviewForm({ ...reviewForm, rating: star })} 
-                          className={`w-5 h-5 cursor-pointer ${star <= reviewForm.rating ? "text-yellow-400 fill-current" : "text-gray-300"}`} 
+                          className={`w-5 h-5 cursor-pointer hover:scale-110 transition-transform ${star <= reviewForm.rating ? "text-amber-400 fill-current" : "text-gray-200"}`} 
                         />
                       ))}
                     </div>
@@ -649,7 +593,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                       placeholder="Your Name" 
                       value={reviewForm.reviewer} 
                       onChange={(e) => setReviewForm({...reviewForm, reviewer: e.target.value})} 
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#d81b60]" 
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[#d81b60] focus:ring-1 focus:ring-[#d81b60] transition-all shadow-sm" 
                     />
                     <input 
                       required 
@@ -657,28 +601,28 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                       placeholder="Your Email" 
                       value={reviewForm.reviewer_email} 
                       onChange={(e) => setReviewForm({...reviewForm, reviewer_email: e.target.value})} 
-                      className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#d81b60]" 
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[#d81b60] focus:ring-1 focus:ring-[#d81b60] transition-all shadow-sm" 
                     />
                   </div>
                   <textarea 
                     required 
-                    placeholder="Write your review here..." 
+                    placeholder="Tell us what you think about this product..." 
                     rows={4} 
                     value={reviewForm.review} 
                     onChange={(e) => setReviewForm({...reviewForm, review: e.target.value})} 
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-[#d81b60]"
+                    className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-xs font-medium focus:outline-none focus:border-[#d81b60] focus:ring-1 focus:ring-[#d81b60] transition-all shadow-sm resize-none"
                   ></textarea>
                   <button 
                     type="submit" 
-                    className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#d81b60] transition-colors"
+                    disabled={loadingReviews}
+                    className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-[#d81b60] transition-colors flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-70"
                   >
-                    Submit Review
+                    {loadingReviews ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Review"}
                   </button>
                 </form>
               </div>
             </div>
           )}
-
         </div>
 
       </div>

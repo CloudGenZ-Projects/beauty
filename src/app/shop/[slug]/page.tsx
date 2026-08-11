@@ -1,8 +1,7 @@
-// src/app/shop/[slug]/page.tsx
 import React from "react";
 import ClientProductDetail from "./ClientProductDetail";
 import { notFound } from "next/navigation";
-import { fetchProduct } from "@/lib/woocommerce"; // <-- DIRECT WOOCOMMERCE IMPORT
+import { fetchProduct } from "@/lib/woocommerce";
 
 export const dynamic = "force-dynamic";
 
@@ -21,23 +20,39 @@ export default async function ProductDetailPageSSR({
   let initialReviews: any[] = [];
 
   try {
-    // 1. Fetch Product DIRECTLY from WooCommerce (Bypassing localhost API)
+    // 1. Fetch Product
     product = await fetchProduct(slug);
 
     if (!product || !product.id) {
        return notFound();
     }
 
-    // 2. Fetch Reviews 
-    // (We wrap this in its own try/catch so if reviews fail, the product still loads!)
+    // 2. Fetch Reviews DIRECTLY from WooCommerce (Bypassing localhost HTTP)
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-      const revRes = await fetch(`${baseUrl}/api/reviews?product_id=${product.id}`, { cache: "no-store" });
-      if (revRes.ok) {
-        initialReviews = await revRes.json();
+      const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim().replace(/\/$/, ""); 
+      const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
+      const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
+
+      if (wpUrl && consumerKey && consumerSecret) {
+        const revRes = await fetch(
+          `${wpUrl}/wp-json/wc/v3/products/reviews?product=${product.id}&per_page=100`, 
+          {
+            headers: { 
+              'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64') 
+            },
+            cache: "no-store"
+          }
+        );
+
+        if (revRes.ok) {
+          const data = await revRes.json();
+          if (Array.isArray(data)) {
+            initialReviews = data;
+          }
+        }
       }
     } catch (revError) {
-      console.warn("Failed to fetch reviews on server. Will use empty array.", revError);
+      console.warn("Failed to fetch reviews on server:", revError);
     }
 
   } catch (error) {
@@ -49,6 +64,5 @@ export default async function ProductDetailPageSSR({
     );
   }
 
-  // 3. Pass data to the interactive Client Component
   return <ClientProductDetail product={product} initialReviews={initialReviews} />;
 }
