@@ -11,6 +11,9 @@ export async function POST(request: Request) {
       payment_method_title = "Credit/Debit Card (Stripe)",
       coupon_lines = [],
       customer_id = 0,
+      shipping_cost = 0,
+      shipping_method_title = "Standard Shipping",
+      shipping_method_id = "flat_rate",
     } = body;
 
     const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
@@ -34,17 +37,31 @@ export async function POST(request: Request) {
       "Content-Type": "application/json",
     };
 
+    // Product Line Items for WooCommerce
     const line_items = (items || []).map((item: any) => ({
       product_id: item.id || item.product_id,
       quantity: item.quantity || 1,
     }));
+
+    // Shipping Line Item for WooCommerce
+    const shipping_lines = [
+      {
+        method_id: shipping_method_id,
+        method_title: shipping_method_title,
+        total: String(Number(shipping_cost).toFixed(2)),
+      },
+    ];
+
+    // Default Country to USA if missing
+    if (billing && !billing.country) billing.country = "US";
+    if (shipping && !shipping.country) shipping.country = "US";
 
     // STRIPE ONLINE PAYMENT
     if (
       (payment_method === "stripe" || payment_method === "card" || payment_method === "online") &&
       stripeSecretKey
     ) {
-      // 1. Create WooCommerce Pending Order
+      // 1. Create Order in WooCommerce with Shipping Costs included
       const wooOrderPayload = {
         payment_method: "stripe",
         payment_method_title: "Credit/Debit Card (Stripe)",
@@ -53,6 +70,7 @@ export async function POST(request: Request) {
         billing: billing || {},
         shipping: shipping || billing || {},
         line_items: line_items,
+        shipping_lines: shipping_lines,
         coupon_lines: coupon_lines,
         customer_id: Number(customer_id) || 0,
       };
@@ -89,20 +107,39 @@ export async function POST(request: Request) {
         stripeParams.append("customer_email", billing.email);
       }
 
-      // Append Line Items to Stripe (Amounts in Cents for USD)
-      (items || []).forEach((item: any, idx: number) => {
-        const unitAmountInSmallestUnit = Math.round(Number(item.price) * 100);
-        stripeParams.append(`line_items[${idx}][price_data][currency]`, stripeCurrency);
+      let lineItemIdx = 0;
+
+      // Add Cart Products to Stripe Line Items
+      (items || []).forEach((item: any) => {
+        const unitAmountInCents = Math.round(Number(item.price) * 100);
+        stripeParams.append(`line_items[${lineItemIdx}][price_data][currency]`, stripeCurrency);
         stripeParams.append(
-          `line_items[${idx}][price_data][product_data][name]`,
-          item.name || "Beauty Product"
+          `line_items[${lineItemIdx}][price_data][product_data][name]`,
+          item.name || "Product"
         );
         stripeParams.append(
-          `line_items[${idx}][price_data][unit_amount]`,
-          String(unitAmountInSmallestUnit)
+          `line_items[${lineItemIdx}][price_data][unit_amount]`,
+          String(unitAmountInCents)
         );
-        stripeParams.append(`line_items[${idx}][quantity]`, String(item.quantity || 1));
+        stripeParams.append(`line_items[${lineItemIdx}][quantity]`, String(item.quantity || 1));
+        lineItemIdx++;
       });
+
+      // Add Shipping Fee Line Item to Stripe if shipping_cost > 0
+      if (Number(shipping_cost) > 0) {
+        const shippingInCents = Math.round(Number(shipping_cost) * 100);
+        stripeParams.append(`line_items[${lineItemIdx}][price_data][currency]`, stripeCurrency);
+        stripeParams.append(
+          `line_items[${lineItemIdx}][price_data][product_data][name]`,
+          shipping_method_title
+        );
+        stripeParams.append(
+          `line_items[${lineItemIdx}][price_data][unit_amount]`,
+          String(shippingInCents)
+        );
+        stripeParams.append(`line_items[${lineItemIdx}][quantity]`, "1");
+        lineItemIdx++;
+      }
 
       const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
         method: "POST",
@@ -116,7 +153,7 @@ export async function POST(request: Request) {
       const stripeSession = await stripeRes.json();
 
       if (!stripeRes.ok) {
-        console.error("Stripe Session Error:", stripeSession);
+        console.error("Stripe Checkout Session Error:", stripeSession);
         return NextResponse.json(
           { error: stripeSession.error?.message || "Stripe Payment Initialization Failed" },
           { status: 400 }
@@ -129,7 +166,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // COD Flow
+    // Cash On Delivery (COD) Flow
     const orderPayload = {
       payment_method: payment_method,
       payment_method_title: payment_method_title,
@@ -137,6 +174,7 @@ export async function POST(request: Request) {
       billing: billing || {},
       shipping: shipping || billing || {},
       line_items: line_items,
+      shipping_lines: shipping_lines,
       coupon_lines: coupon_lines,
       customer_id: Number(customer_id) || 0,
     };
@@ -162,7 +200,7 @@ export async function POST(request: Request) {
       url: `/thank-you?order_id=${wooOrder.id}`,
     });
   } catch (error: any) {
-    console.error("Checkout POST Error:", error);
+    console.error("Checkout API Error:", error);
     return NextResponse.json(
       { error: error.message || "An unexpected error occurred during checkout" },
       { status: 500 }
