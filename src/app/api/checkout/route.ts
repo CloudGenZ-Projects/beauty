@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const baseUrl = wpUrl?.replace(/\/$/, "");
 
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
-    const stripeCurrency = (process.env.STRIPE_CURRENCY || "inr").toLowerCase();
+    const stripeCurrency = (process.env.STRIPE_CURRENCY || "usd").toLowerCase();
 
     if (!baseUrl || !consumerKey || !consumerSecret) {
       return NextResponse.json(
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
         stripeParams.append("customer_email", billing.email);
       }
 
-      // Append Line Items to Stripe
+      // Append Line Items to Stripe (Amounts in Cents for USD)
       (items || []).forEach((item: any, idx: number) => {
         const unitAmountInSmallestUnit = Math.round(Number(item.price) * 100);
         stripeParams.append(`line_items[${idx}][price_data][currency]`, stripeCurrency);
