@@ -36,10 +36,21 @@ export function getCategoryImage(cat: any): string {
   return "";
 }
 
+export interface HeroSlide {
+  id?: string | number;
+  image?: string;
+  title?: string;
+  subtitle?: string;
+  link?: string;
+  buttonText?: string;
+  align?: string;
+  [key: string]: any;
+}
+
 interface HomePageClientProps {
   initialProducts: any[];
   initialCategories: any[];
-  initialHeroSlides?: any[]; 
+  initialHeroSlides?: HeroSlide[] | { data: HeroSlide[] } | any; 
   initialCircularDeals?: any[];
 }
 
@@ -53,7 +64,7 @@ export default function HomePageClient({
   const products = Array.isArray(initialProducts) ? initialProducts : [];
   const categories = Array.isArray(initialCategories) ? initialCategories : [];
   
-  const heroSlidesData = Array.isArray(initialHeroSlides) 
+  const heroSlidesData: HeroSlide[] = Array.isArray(initialHeroSlides) 
     ? initialHeroSlides 
     : (initialHeroSlides as any)?.data && Array.isArray((initialHeroSlides as any).data) 
       ? (initialHeroSlides as any).data 
@@ -96,7 +107,7 @@ export default function HomePageClient({
         <div className={`${containerBg} p-4 md:p-8`}>
           <div className="max-w-[1600px] mx-auto">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
-              {productsSlice.map((prod, index) => {
+              {productsSlice.map((prod: any, index: number) => {
                 const imgUrl = getProductImage(prod);
                 const currentPrice = prod.sale_price || prod.price || "0";
                 const originalPrice = prod.regular_price || currentPrice;
@@ -179,7 +190,7 @@ export default function HomePageClient({
       {/* HERO SLIDER */}
       {heroSlidesData.length > 0 && (
         <section className="relative w-full h-[60vh] md:h-[80vh] bg-gray-900 group overflow-hidden">
-          {heroSlidesData.map((slide, index) => (
+          {heroSlidesData.map((slide: HeroSlide, index: number) => (
             <div 
               key={slide.id || index} 
               className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${currentSlide === index ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
@@ -225,7 +236,7 @@ export default function HomePageClient({
               </button>
 
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
-                {heroSlidesData.map((_, index) => (
+                {heroSlidesData.map((_: HeroSlide, index: number) => (
                   <button 
                     key={index} 
                     onClick={() => setCurrentSlide(index)}
@@ -243,7 +254,7 @@ export default function HomePageClient({
         <section className="bg-[#fce4ec] py-4 md:py-6 w-full border-b border-pink-200">
           <div className="max-w-[100vw] mx-auto px-4 overflow-x-auto scrollbar-hide snap-x">
             <div className="flex items-center gap-4 md:gap-8 min-w-max px-2">
-              {circularDealsData.map((rawDeal, idx) => {
+              {circularDealsData.map((rawDeal: any, idx: number) => {
                 const deal = {
                   label: rawDeal.acf?.deal_label || (typeof rawDeal.title === 'string' ? rawDeal.title : rawDeal.title?.rendered) || rawDeal.deal_label || rawDeal.label || "",
                   price: rawDeal.acf?.deal_value || rawDeal.deal_value || rawDeal.price || "0",
@@ -317,7 +328,7 @@ export default function HomePageClient({
             </div>
 
             <div className="flex flex-wrap justify-center gap-4 md:gap-6">
-              {categories.map((cat) => {
+              {categories.map((cat: any) => {
                 const catImg = getCategoryImage(cat);
                 return (
                   <Link 
@@ -364,8 +375,8 @@ export default function HomePageClient({
       {/* EXCLUSIVE BRANDS PART 1 */}
       {categories.length > 0 && products.length > 0 && (
         <section className="py-12 bg-white max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col gap-12">
-          {categories.slice(0, 4).map((brand, index) => {
-             let brandSpecificProducts = products.filter(p => p.categories?.some((c: any) => c.id === brand.id || c.slug === brand.slug));
+          {categories.slice(0, 4).map((brand: any, index: number) => {
+             let brandSpecificProducts = products.filter((p: any) => p.categories?.some((c: any) => c.id === brand.id || c.slug === brand.slug));
              let displayProducts = brandSpecificProducts.length > 0 ? brandSpecificProducts : getSafeItems(products, index * 5, 10);
              if (displayProducts.length === 0) return null;
              
@@ -388,7 +399,7 @@ export default function HomePageClient({
                   </div>
                   <div className="w-full lg:w-[65%] flex flex-col p-4 md:p-6 bg-[#faf6f0] relative">
                      <div className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide snap-x items-stretch">
-                        {displayProducts.slice(0, 10).map((prod, pIdx) => {
+                        {displayProducts.slice(0, 10).map((prod: any, pIdx: number) => {
                            const imgUrl = getProductImage(prod);
                            const currentPrice = prod.sale_price || prod.price || "0";
                            const originalPrice = prod.regular_price || currentPrice;
@@ -449,9 +460,8 @@ export default function HomePageClient({
               <div className="flex flex-col lg:flex-row gap-6">
                  {/* Left Big Hero Product */}
                  <div className="w-full lg:w-1/2">
-                    {getSafeItems(products, 0, 1).map((prod, idx) => {
+                    {getSafeItems(products, 0, 1).map((prod: any, idx: number) => {
                        const imgUrl = getProductImage(prod);
-                       const currentPrice = prod.sale_price || prod.price || "0";
                        const safeSlug = prod.slug || prod.id;
 
                        return (
@@ -474,7 +484,7 @@ export default function HomePageClient({
 
                  {/* Right 2x2 Grid Products */}
                  <div className="w-full lg:w-1/2 grid grid-cols-2 gap-4 md:gap-6">
-                    {getSafeItems(products, 1, 4).map((prod, idx) => {
+                    {getSafeItems(products, 1, 4).map((prod: any, idx: number) => {
                        const imgUrl = getProductImage(prod);
                        const currentPrice = prod.sale_price || prod.price || "0";
                        const safeSlug = prod.slug || prod.id;
@@ -523,7 +533,7 @@ export default function HomePageClient({
               </div>
 
               <div className="grid grid-cols-2 gap-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2 md:flex md:flex-row md:max-h-none md:overflow-y-visible md:overflow-x-auto md:pb-6 md:pr-0 md:snap-x md:items-stretch">
-                 {getSafeItems(products, 5, 12).map((prod, idx) => { 
+                 {getSafeItems(products, 5, 12).map((prod: any, idx: number) => { 
                     const imgUrl = getProductImage(prod);
                     const currentPrice = prod.sale_price || prod.price || "0";
                     const originalPrice = prod.regular_price || currentPrice; 
