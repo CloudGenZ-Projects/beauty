@@ -432,36 +432,148 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
             </div>
           )}
 
-          {/* TAB 2: SPECIFICATIONS */}
+          {/* TAB 2: SPECIFICATIONS & DETAILED INFO (UPDATED) */}
           {activeTab === "specs" && (
-            <div className="max-w-2xl">
-              <table className="w-full text-left text-xs sm:text-sm border-collapse">
-                <tbody>
-                  {product.sku && (
-                    <tr className="border-b border-gray-100">
-                      <td className="py-3 font-bold text-gray-500 w-1/3">SKU</td>
-                      <td className="py-3 font-mono font-medium text-gray-800">{product.sku}</td>
+            <div className="max-w-4xl">
+              <div className="overflow-hidden rounded-2xl border border-gray-100 bg-gray-50/50 p-1 sm:p-3">
+                <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="py-3 px-4 font-black uppercase text-gray-400 tracking-wider w-1/3">Specification</th>
+                      <th className="py-3 px-4 font-black uppercase text-gray-400 tracking-wider">Details</th>
                     </tr>
-                  )}
-                  {product.weight && (
-                    <tr className="border-b border-gray-100">
-                      <td className="py-3 font-bold text-gray-500">Weight</td>
-                      <td className="py-3 font-medium text-gray-800">{product.weight} kg</td>
-                    </tr>
-                  )}
-                  {Array.isArray(product.attributes) &&
-                    product.attributes.map((attr: any) => (
-                      <tr key={attr.name} className="border-b border-gray-100">
-                        <td className="py-3 font-bold text-gray-500">{attr.name}</td>
-                        <td className="py-3 font-medium text-gray-800">{attr.options?.join(", ")}</td>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white rounded-xl shadow-sm">
+                    
+                    {/* ID */}
+                    {product.id && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Product ID</td>
+                        <td className="py-3.5 px-4 font-mono font-medium text-gray-800">#{product.id}</td>
                       </tr>
-                    ))}
-                  <tr className="border-b border-gray-100">
-                    <td className="py-3 font-bold text-gray-500">Stock Status</td>
-                    <td className="py-3 font-medium text-gray-800 capitalize">{product.stock_status || "In Stock"}</td>
-                  </tr>
-                </tbody>
-              </table>
+                    )}
+
+                    {/* SKU */}
+                    {product.sku && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">SKU / Item Code</td>
+                        <td className="py-3.5 px-4 font-mono font-medium text-gray-800">{product.sku}</td>
+                      </tr>
+                    )}
+
+                    {/* Product Type */}
+                    {product.type && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Product Type</td>
+                        <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">{product.type} Product</td>
+                      </tr>
+                    )}
+
+                    {/* Categories */}
+                    {Array.isArray(product.categories) && product.categories.length > 0 && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Categories</td>
+                        <td className="py-3.5 px-4 font-medium text-gray-800">
+                          <div className="flex flex-wrap gap-1.5">
+                            {product.categories.map((cat: any) => (
+                              <span key={cat.id} className="bg-purple-50 text-purple-700 px-2.5 py-0.5 rounded-md text-xs font-semibold border border-purple-100">
+                                {cat.name}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+
+                    {/* Tags */}
+                    {Array.isArray(product.tags) && product.tags.length > 0 && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Tags / Keywords</td>
+                        <td className="py-3.5 px-4 font-medium text-gray-800">
+                          <div className="flex flex-wrap gap-1.5">
+                            {product.tags.map((tag: any) => (
+                              <span key={tag.id} className="bg-gray-100 text-gray-600 px-2.5 py-0.5 rounded-md text-xs font-medium">
+                                #{tag.name}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+
+                    {/* Weight */}
+                    {product.weight && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Weight</td>
+                        <td className="py-3.5 px-4 font-medium text-gray-800">{product.weight} kg</td>
+                      </tr>
+                    )}
+
+                    {/* Dimensions */}
+                    {product.dimensions && (product.dimensions.length || product.dimensions.width || product.dimensions.height) && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Dimensions (L × W × H)</td>
+                        <td className="py-3.5 px-4 font-medium text-gray-800">
+                          {product.dimensions.length || "0"} × {product.dimensions.width || "0"} × {product.dimensions.height || "0"} cm
+                        </td>
+                      </tr>
+                    )}
+
+                    {/* Stock Status & Quantity */}
+                    <tr>
+                      <td className="py-3.5 px-4 font-bold text-gray-600">Stock Status</td>
+                      <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">
+                        <span className={`inline-flex items-center gap-1.5 font-bold ${product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}`}>
+                          <span className={`w-2 h-2 rounded-full ${product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500"}`} />
+                          {product.stock_status === "outofstock" ? "Out of Stock" : "In Stock"}
+                          {product.stock_quantity !== null && product.stock_quantity !== undefined && ` (${product.stock_quantity} available)`}
+                        </span>
+                      </td>
+                    </tr>
+
+                    {/* Shipping Class */}
+                    {product.shipping_class && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Shipping Class</td>
+                        <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">{product.shipping_class}</td>
+                      </tr>
+                    )}
+
+                    {/* Tax Status */}
+                    {product.tax_status && (
+                      <tr>
+                        <td className="py-3.5 px-4 font-bold text-gray-600">Tax Status</td>
+                        <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">{product.tax_status}</td>
+                      </tr>
+                    )}
+
+                    {/* Dynamic WooCommerce Attributes (Color, Size, Material, Shade, etc.) */}
+                    {Array.isArray(product.attributes) &&
+                      product.attributes.map((attr: any) => (
+                        <tr key={attr.id || attr.name}>
+                          <td className="py-3.5 px-4 font-bold text-gray-600 capitalize">{attr.name}</td>
+                          <td className="py-3.5 px-4 font-medium text-gray-800">
+                            {Array.isArray(attr.options) ? attr.options.join(", ") : String(attr.options || "")}
+                          </td>
+                        </tr>
+                      ))}
+
+                    {/* Custom Meta Data (If provided by backend WooCommerce plugin) */}
+                    {Array.isArray(product.meta_data) &&
+                      product.meta_data
+                        .filter((meta: any) => !meta.key.startsWith("_") && meta.value)
+                        .map((meta: any) => (
+                          <tr key={meta.id || meta.key}>
+                            <td className="py-3.5 px-4 font-bold text-gray-600 capitalize">{meta.key.replace(/_/g, " ")}</td>
+                            <td className="py-3.5 px-4 font-medium text-gray-800">
+                              {typeof meta.value === "object" ? JSON.stringify(meta.value) : String(meta.value)}
+                            </td>
+                          </tr>
+                        ))}
+
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
