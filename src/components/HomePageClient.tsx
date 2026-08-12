@@ -100,13 +100,13 @@ export default function HomePageClient({
     if (!productsSlice || productsSlice.length === 0) return null;
 
     return (
-      <section className="py-8 bg-white border-t border-gray-100">
-        <div className={`${ribbonBg} text-white py-3 px-4 md:px-8 text-sm md:text-xl font-extrabold max-w-[100vw] overflow-hidden uppercase tracking-widest shadow-md`}>
+      <section className="py-6 sm:py-8 bg-white border-t border-gray-100">
+        <div className={`${ribbonBg} text-white py-2.5 sm:py-3 px-3 sm:px-6 md:px-8 text-xs sm:text-sm md:text-lg lg:text-xl font-extrabold max-w-[100vw] overflow-hidden uppercase tracking-widest shadow-md text-center sm:text-left`}>
            {title}
         </div>
-        <div className={`${containerBg} p-4 md:p-8`}>
+        <div className={`${containerBg} p-3 sm:p-5 md:p-8`}>
           <div className="max-w-[1600px] mx-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4 md:gap-5">
               {productsSlice.map((prod: any, index: number) => {
                 const imgUrl = getProductImage(prod);
                 const currentPrice = prod.sale_price || prod.price || "0";
@@ -119,7 +119,7 @@ export default function HomePageClient({
                   <div key={uniqueKey} className="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col group border border-gray-100 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative h-full">
                     
                     {prod.featured && (
-                      <div className="absolute top-2 left-2 z-10 bg-black/80 text-white text-[9px] md:text-[10px] px-2 py-1 rounded shadow-sm tracking-wider font-semibold">
+                      <div className="absolute top-1.5 left-1.5 sm:top-2 sm:left-2 z-10 bg-black/80 text-white text-[8px] sm:text-[9px] md:text-[10px] px-1.5 py-0.5 sm:px-2 sm:py-1 rounded shadow-sm tracking-wider font-semibold">
                         Featured
                       </div>
                     )}
@@ -136,26 +136,26 @@ export default function HomePageClient({
                           image: imgUrl,
                         });
                       }}
-                      className="absolute top-2 right-2 z-10 bg-white/80 backdrop-blur p-1.5 rounded-full shadow-sm text-gray-400 hover:text-[#d81b60] transition-colors"
+                      className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 z-10 bg-white/80 backdrop-blur p-1 sm:p-1.5 rounded-full shadow-sm text-gray-400 hover:text-[#d81b60] transition-colors"
                       title={isLiked ? "Remove from wishlist" : "Add to wishlist"}
                     >
-                      <Heart className={`w-3.5 h-3.5 ${isLiked ? "text-[#d81b60] fill-current" : ""}`} />
+                      <Heart className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${isLiked ? "text-[#d81b60] fill-current" : ""}`} />
                     </button>
 
-                    <Link href={`/shop/${safeSlug}`} prefetch={false} className="block relative h-48 md:h-56 p-4 bg-white flex-shrink-0">
+                    <Link href={`/shop/${safeSlug}`} prefetch={false} className="block relative h-36 sm:h-48 md:h-56 p-2 sm:p-4 bg-white flex-shrink-0">
                       {imgUrl && <img src={imgUrl} alt={prod.name || "Product"} className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500" />}
                     </Link>
 
-                    <div className="p-3 md:p-4 flex flex-col flex-1 text-center border-t border-gray-50">
-                      <Link href={`/shop/${safeSlug}`} prefetch={false} className="text-[11px] md:text-sm font-bold text-gray-800 line-clamp-2 group-hover:text-[#d81b60] min-h-[32px] md:min-h-[40px] mb-3 transition-colors">
+                    <div className="p-2.5 sm:p-3 md:p-4 flex flex-col flex-1 text-center border-t border-gray-50">
+                      <Link href={`/shop/${safeSlug}`} prefetch={false} className="text-[10px] sm:text-[11px] md:text-sm font-bold text-gray-800 line-clamp-2 group-hover:text-[#d81b60] min-h-[28px] sm:min-h-[32px] md:min-h-[40px] mb-2 sm:mb-3 transition-colors leading-tight">
                         {prod.name}
                       </Link>
-                      <div className="mt-auto flex flex-col gap-3">
-                         <div className="flex items-center justify-center gap-2">
+                      <div className="mt-auto flex flex-col gap-2 sm:gap-3">
+                         <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
                             {originalPrice !== currentPrice && (
-                              <span className="text-[10px] sm:text-xs text-gray-400 line-through font-medium">${Number(originalPrice).toLocaleString()}</span>
+                              <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 line-through font-medium">${Number(originalPrice).toLocaleString()}</span>
                             )}
-                            <span className="text-sm sm:text-lg font-black text-[#b456c8]">${Number(currentPrice).toLocaleString()}</span>
+                            <span className="text-xs sm:text-sm md:text-lg font-black text-[#b456c8]">${Number(currentPrice).toLocaleString()}</span>
                          </div>
                          <button
                            onClick={(e) => {
@@ -163,7 +163,7 @@ export default function HomePageClient({
                               e.stopPropagation();
                               addItem({ id: prod.id, name: prod.name, slug: safeSlug, price: currentPrice, quantity: 1, image: imgUrl });
                            }}
-                           className="w-full py-2.5 bg-black text-white text-[10px] sm:text-xs font-bold rounded flex items-center justify-center gap-2 hover:bg-[#d81b60] transition-colors shadow-sm uppercase tracking-wider"
+                           className="w-full py-2 sm:py-2.5 bg-black text-white text-[9px] sm:text-[10px] md:text-xs font-bold rounded flex items-center justify-center gap-1.5 sm:gap-2 hover:bg-[#d81b60] transition-colors shadow-sm uppercase tracking-wider"
                          >
                            Quick Shop
                          </button>
@@ -173,8 +173,8 @@ export default function HomePageClient({
                 );
               })}
             </div>
-            <div className="flex justify-center mt-10">
-               <Link href="/shop" prefetch={false} className="bg-black text-white px-12 py-3.5 rounded-md shadow-lg text-sm font-bold hover:bg-[#d81b60] transition-colors uppercase tracking-widest">
+            <div className="flex justify-center mt-6 sm:mt-10">
+               <Link href="/shop" prefetch={false} className="bg-black text-white px-8 sm:px-12 py-2.5 sm:py-3.5 rounded-md shadow-lg text-xs sm:text-sm font-bold hover:bg-[#d81b60] transition-colors uppercase tracking-widest">
                   Show More
                </Link>
             </div>
@@ -185,11 +185,11 @@ export default function HomePageClient({
   };
 
   return (
-    <div className="w-full overflow-hidden bg-white">
+    <div className="w-full overflow-x-hidden bg-white">
       
       {/* HERO SLIDER */}
       {heroSlidesData.length > 0 && (
-        <section className="relative w-full h-[60vh] md:h-[80vh] bg-gray-900 group overflow-hidden">
+        <section className="relative w-full h-[50vh] sm:h-[65vh] md:h-[75vh] lg:h-[85vh] xl:h-[80vh] min-h-[380px] sm:min-h-[480px] bg-gray-900 group overflow-hidden">
           {heroSlidesData.map((slide: HeroSlide, index: number) => (
             <div 
               key={slide.id || index} 
@@ -202,18 +202,18 @@ export default function HomePageClient({
                   className={`w-full h-full object-cover transition-transform duration-[10000ms] ${currentSlide === index ? 'scale-110' : 'scale-100'}`} 
                 />
               )}
-              <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-black/40 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
               
-              <div className={`absolute inset-0 flex flex-col justify-center px-8 md:px-20 max-w-[1600px] mx-auto ${slide.align || 'items-start text-left'}`}>
+              <div className={`absolute inset-0 flex flex-col justify-center px-4 sm:px-8 md:px-16 lg:px-20 max-w-[1600px] mx-auto ${slide.align || 'items-start text-left'}`}>
                 {slide.title && (
-                  <h2 className="text-white text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-wider mb-4 drop-shadow-lg leading-tight" dangerouslySetInnerHTML={{ __html: slide.title }} />
+                  <h2 className="text-2xl sm:text-4xl md:text-6xl lg:text-7xl font-black uppercase tracking-wider mb-2 sm:mb-4 drop-shadow-lg leading-tight text-white max-w-4xl" dangerouslySetInnerHTML={{ __html: slide.title }} />
                 )}
                 {slide.subtitle && (
-                  <p className="text-white/90 text-lg md:text-2xl font-light mb-8 drop-shadow-md">
+                  <p className="text-white/90 text-xs sm:text-lg md:text-2xl font-light mb-4 sm:mb-8 drop-shadow-md max-w-2xl line-clamp-2 sm:line-clamp-none">
                     {slide.subtitle}
                   </p>
                 )}
-                <Link href={slide.link || "/shop"} prefetch={false} className="bg-white text-black px-8 py-3.5 md:px-10 md:py-4 rounded-sm font-bold uppercase tracking-widest text-xs md:text-sm hover:bg-[#d81b60] hover:text-white transition-colors duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[#d81b60]/50">
+                <Link href={slide.link || "/shop"} prefetch={false} className="bg-white text-black px-5 py-2.5 sm:px-8 sm:py-3.5 md:px-10 md:py-4 rounded-sm font-bold uppercase tracking-widest text-[10px] sm:text-xs md:text-sm hover:bg-[#d81b60] hover:text-white transition-colors duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[#d81b60]/50 inline-block">
                   {slide.buttonText || "Shop Now"}
                 </Link>
               </div>
@@ -224,23 +224,26 @@ export default function HomePageClient({
             <>
               <button 
                 onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/90 text-white hover:text-black p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+                className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/90 text-white hover:text-black p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all opacity-70 sm:opacity-0 sm:group-hover:opacity-100 shadow-lg"
+                aria-label="Previous slide"
               >
-                <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
+                <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
               </button>
               <button 
                 onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/90 text-white hover:text-black p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 shadow-lg"
+                className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/90 text-white hover:text-black p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all opacity-70 sm:opacity-0 sm:group-hover:opacity-100 shadow-lg"
+                aria-label="Next slide"
               >
-                <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
+                <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
               </button>
 
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3">
+              <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 sm:gap-3">
                 {heroSlidesData.map((_: HeroSlide, index: number) => (
                   <button 
                     key={index} 
                     onClick={() => setCurrentSlide(index)}
-                    className={`transition-all duration-300 rounded-full shadow-lg ${currentSlide === index ? 'w-8 h-2.5 bg-[#d81b60]' : 'w-2.5 h-2.5 bg-white/60 hover:bg-white'}`}
+                    aria-label={`Go to slide ${index + 1}`}
+                    className={`transition-all duration-300 rounded-full shadow-lg ${currentSlide === index ? 'w-6 sm:w-8 h-2 sm:h-2.5 bg-[#d81b60]' : 'w-2 sm:w-2.5 h-2 sm:h-2.5 bg-white/60 hover:bg-white'}`}
                   />
                 ))}
               </div>
@@ -251,9 +254,9 @@ export default function HomePageClient({
 
       {/* CIRCULAR DEALS */}
       {circularDealsData.length > 0 && (
-        <section className="bg-[#fce4ec] py-4 md:py-6 w-full border-b border-pink-200">
-          <div className="max-w-[100vw] mx-auto px-4 overflow-x-auto scrollbar-hide snap-x">
-            <div className="flex items-center gap-4 md:gap-8 min-w-max px-2">
+        <section className="bg-[#fce4ec] py-3 sm:py-4 md:py-6 w-full border-b border-pink-200">
+          <div className="max-w-[1600px] mx-auto px-2 sm:px-4 overflow-x-auto scrollbar-hide snap-x">
+            <div className="flex items-center gap-3 sm:gap-6 md:gap-8 min-w-max px-2 justify-start sm:justify-center">
               {circularDealsData.map((rawDeal: any, idx: number) => {
                 const deal = {
                   label: rawDeal.acf?.deal_label || (typeof rawDeal.title === 'string' ? rawDeal.title : rawDeal.title?.rendered) || rawDeal.deal_label || rawDeal.label || "",
@@ -280,25 +283,25 @@ export default function HomePageClient({
                 }
 
                 return (
-                  <Link href={linkHref} prefetch={false} key={rawDeal.id || idx} className="flex flex-col items-center gap-2 cursor-pointer group snap-start">
-                    <div className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-white shadow-md flex items-center justify-center p-1 transition-transform group-hover:scale-105">
+                  <Link href={linkHref} prefetch={false} key={rawDeal.id || idx} className="flex flex-col items-center gap-1.5 sm:gap-2 cursor-pointer group snap-start">
+                    <div className="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-white shadow-md flex items-center justify-center p-1 transition-transform group-hover:scale-105">
                       {deal.type === "under" ? (
-                        <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-[#d32f2f] text-white shadow-inner' : `border-[4px] ${deal.color} bg-white`}`}>
-                          <span className={`text-[8px] md:text-[10px] font-bold uppercase ${deal.highlight ? 'text-white' : 'text-gray-500'}`}>{deal.highlight ? 'All Under' : 'Under'}</span>
-                          <span className={`text-lg md:text-xl font-black leading-none ${deal.highlight ? 'text-white' : 'text-[#000]'}`}><span className="text-xs">$</span>{deal.price}</span>
+                        <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-[#d32f2f] text-white shadow-inner' : `border-[3px] sm:border-[4px] ${deal.color} bg-white`}`}>
+                          <span className={`text-[7px] sm:text-[9px] md:text-[10px] font-bold uppercase ${deal.highlight ? 'text-white' : 'text-gray-500'}`}>{deal.highlight ? 'All Under' : 'Under'}</span>
+                          <span className={`text-sm sm:text-lg md:text-xl font-black leading-none ${deal.highlight ? 'text-white' : 'text-[#000]'}`}><span className="text-[10px] sm:text-xs">$</span>{deal.price}</span>
                         </div>
                       ) : deal.type === "flat" ? (
-                          <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-gradient-to-br from-purple-600 to-indigo-800 text-white shadow-inner' : `border-[4px] ${deal.color} bg-white`}`}>
-                          <span className="text-[9px] md:text-[11px] font-bold uppercase">FLAT</span>
-                          <span className="text-lg md:text-xl font-black leading-none"><span className="text-xs">$</span>{deal.price}</span>
+                          <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-gradient-to-br from-purple-600 to-indigo-800 text-white shadow-inner' : `border-[3px] sm:border-[4px] ${deal.color} bg-white`}`}>
+                          <span className="text-[8px] sm:text-[9px] md:text-[11px] font-bold uppercase">FLAT</span>
+                          <span className="text-sm sm:text-lg md:text-xl font-black leading-none"><span className="text-[10px] sm:text-xs">$</span>{deal.price}</span>
                           </div>
                       ) : (
-                          <div className="w-full h-full rounded-full bg-gradient-to-br from-red-600 to-red-800 text-white flex flex-col items-center justify-center shadow-inner font-black text-xl md:text-3xl leading-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
-                            <span className="drop-shadow-md">{deal.price}<span className="text-sm">%</span></span>
+                          <div className="w-full h-full rounded-full bg-gradient-to-br from-red-600 to-red-800 text-white flex flex-col items-center justify-center shadow-inner font-black text-sm sm:text-xl md:text-3xl leading-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
+                            <span className="drop-shadow-md">{deal.price}<span className="text-xs sm:text-sm">%</span></span>
                           </div>
                       )}
                     </div>
-                    <span className="text-[10px] md:text-xs font-semibold text-gray-800 tracking-wide text-center group-hover:text-pink-600 transition-colors">{deal.label}</span>
+                    <span className="text-[9px] sm:text-[10px] md:text-xs font-semibold text-gray-800 tracking-wide text-center group-hover:text-pink-600 transition-colors max-w-[70px] sm:max-w-none truncate sm:whitespace-normal">{deal.label}</span>
                   </Link>
                 );
               })}
@@ -309,25 +312,25 @@ export default function HomePageClient({
 
       {/* ALL COLLECTION / CATEGORIES */}
       {categories.length > 0 && (
-        <section className="py-12 md:py-16 bg-[#faf6f0]">
-          <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-            <div className="text-center mb-10 md:mb-12">
-              <span className="text-pink-500 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-2 block">
+        <section className="py-8 sm:py-12 md:py-16 bg-[#faf6f0]">
+          <div className="max-w-[1600px] mx-auto px-3 sm:px-6">
+            <div className="text-center mb-6 sm:mb-10 md:mb-12">
+              <span className="text-pink-500 text-[9px] sm:text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-1 sm:mb-2 block">
                 Discover Your Favorites
               </span>
               <Link href="/shop" prefetch={false} className="inline-block group">
-                 <h2 className="text-3xl md:text-5xl font-black text-gray-900 flex items-center justify-center gap-2 group-hover:text-[#d81b60] transition-colors uppercase tracking-tight">
+                 <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-gray-900 flex items-center justify-center gap-2 group-hover:text-[#d81b60] transition-colors uppercase tracking-tight">
                    All <span className="text-[#d81b60] font-light">Collection</span>
                  </h2>
               </Link>
-              <div className="flex items-center justify-center gap-2 mt-5">
-                 <div className="h-px bg-gray-300 w-12 md:w-20"></div>
+              <div className="flex items-center justify-center gap-2 mt-3 sm:mt-5">
+                 <div className="h-px bg-gray-300 w-8 sm:w-12 md:w-20"></div>
                  <div className="h-1.5 w-1.5 bg-[#d81b60] rounded-full"></div>
-                 <div className="h-px bg-gray-300 w-12 md:w-20"></div>
+                 <div className="h-px bg-gray-300 w-8 sm:w-12 md:w-20"></div>
               </div>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-4 md:gap-6">
+            <div className="flex flex-wrap justify-center gap-2.5 sm:gap-4 md:gap-6">
               {categories.map((cat: any) => {
                 const catImg = getCategoryImage(cat);
                 return (
@@ -335,9 +338,9 @@ export default function HomePageClient({
                     href={`/shop?category=${cat.slug || cat.id}`} 
                     prefetch={false} 
                     key={cat.id} 
-                    className="w-[30%] sm:w-[22%] md:w-[15%] lg:w-[11%] bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-pink-200 transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden flex flex-col items-center p-3 md:p-5 group relative"
+                    className="w-[29%] xs:w-[22%] sm:w-[22%] md:w-[15%] lg:w-[11%] xl:w-[10%] bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-pink-200 transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden flex flex-col items-center p-2.5 sm:p-3 md:p-5 group relative"
                   >
-                    <div className="w-full aspect-square flex items-center justify-center mb-3 overflow-hidden bg-gray-50/50 rounded-xl p-3 group-hover:bg-pink-50 transition-colors duration-300">
+                    <div className="w-full aspect-square flex items-center justify-center mb-2 sm:mb-3 overflow-hidden bg-gray-50/50 rounded-lg sm:rounded-xl p-1.5 sm:p-3 group-hover:bg-pink-50 transition-colors duration-300">
                       {catImg && (
                         <img 
                            src={catImg} 
@@ -347,7 +350,7 @@ export default function HomePageClient({
                       )}
                     </div>
                     
-                    <span className="text-[10px] md:text-xs font-extrabold text-center text-gray-800 line-clamp-2 w-full mt-auto uppercase tracking-wide group-hover:text-[#d81b60] transition-colors">
+                    <span className="text-[9px] sm:text-[10px] md:text-xs font-extrabold text-center text-gray-800 line-clamp-2 w-full mt-auto uppercase tracking-wide group-hover:text-[#d81b60] transition-colors leading-tight">
                       {cat.name}
                     </span>
                   </Link>
@@ -355,13 +358,13 @@ export default function HomePageClient({
               })}
             </div>
             
-            <div className="flex justify-center mt-12 md:mt-14">
+            <div className="flex justify-center mt-8 sm:mt-12 md:mt-14">
                <Link 
                  href="/shop" 
                  prefetch={false} 
-                 className="group flex items-center gap-3 bg-white border-2 border-black text-black px-8 py-3.5 rounded-full text-xs md:text-sm font-bold hover:bg-black hover:text-white transition-all duration-300 uppercase tracking-widest shadow-md hover:shadow-xl"
+                 className="group flex items-center gap-2 sm:gap-3 bg-white border-2 border-black text-black px-6 sm:px-8 py-2.5 sm:py-3.5 rounded-full text-[11px] sm:text-xs md:text-sm font-bold hover:bg-black hover:text-white transition-all duration-300 uppercase tracking-widest shadow-md hover:shadow-xl"
                >
-                  <LayoutGrid className="w-4 h-4 md:w-5 md:h-5 group-hover:text-white transition-colors" />
+                  <LayoutGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 group-hover:text-white transition-colors" />
                   Explore All Collections
                </Link>
             </div>
@@ -374,7 +377,7 @@ export default function HomePageClient({
 
       {/* EXCLUSIVE BRANDS PART 1 */}
       {categories.length > 0 && products.length > 0 && (
-        <section className="py-12 bg-white max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col gap-12">
+        <section className="py-8 sm:py-12 bg-white max-w-[1600px] mx-auto px-3 sm:px-6 flex flex-col gap-8 sm:gap-12">
           {categories.slice(0, 4).map((brand: any, index: number) => {
              let brandSpecificProducts = products.filter((p: any) => p.categories?.some((c: any) => c.id === brand.id || c.slug === brand.slug));
              let displayProducts = brandSpecificProducts.length > 0 ? brandSpecificProducts : getSafeItems(products, index * 5, 10);
@@ -384,21 +387,21 @@ export default function HomePageClient({
              const brandImg = getCategoryImage(brand);
 
              return (
-               <div key={`showcase-1-${brand.id}`} className={`w-full flex flex-col lg:flex-row border-[3px] ${style.border} bg-[#fcf8f2] rounded-md overflow-hidden shadow-lg`}>
-                  <div className={`w-full lg:w-[35%] relative flex flex-col justify-center items-center p-8 text-center min-h-[300px] lg:min-h-[450px] ${style.bg} ${style.text}`}>
-                     <div className="relative z-10">
-                        <h3 className={`text-xl md:text-2xl font-light tracking-widest ${style.accent} mb-4 uppercase`}>{style.label} <span className="font-bold">{brand.name?.split(' ')[0]}</span></h3>
+               <div key={`showcase-1-${brand.id}`} className={`w-full flex flex-col lg:flex-row border-2 md:border-[3px] ${style.border} bg-[#fcf8f2] rounded-lg md:rounded-xl overflow-hidden shadow-lg`}>
+                  <div className={`w-full lg:w-[35%] xl:w-[30%] relative flex flex-col justify-center items-center p-5 sm:p-8 text-center min-h-[220px] sm:min-h-[280px] lg:min-h-[450px] ${style.bg} ${style.text}`}>
+                     <div className="relative z-10 w-full flex flex-col items-center">
+                        <h3 className={`text-lg sm:text-xl md:text-2xl font-light tracking-widest ${style.accent} mb-2 sm:mb-4 uppercase`}>{style.label} <span className="font-bold">{brand.name?.split(' ')[0]}</span></h3>
                         {brandImg && (
-                          <div className="bg-white/90 p-4 rounded-xl shadow-lg mb-6 inline-block min-w-[150px]">
-                            <img src={brandImg} alt={brand.name} className="h-16 md:h-24 w-full object-contain max-w-[180px] mix-blend-multiply" />
+                          <div className="bg-white/90 p-2.5 sm:p-4 rounded-xl shadow-lg mb-3 sm:mb-6 inline-block min-w-[120px] sm:min-w-[150px]">
+                            <img src={brandImg} alt={brand.name} className="h-12 sm:h-16 md:h-24 w-full object-contain max-w-[140px] sm:max-w-[180px] mix-blend-multiply" />
                           </div>
                         )}
-                        <p className="text-sm md:text-base font-medium tracking-widest uppercase opacity-90">Premium Beauty Arrivals</p>
-                        <Link href={`/shop?category=${brand.slug || brand.id}`} prefetch={false} className="mt-6 inline-block bg-white text-black px-8 py-3 rounded shadow-md text-xs font-bold hover:bg-[#d81b60] hover:text-white transition-all transform hover:scale-105 uppercase tracking-wide">Explore Brand</Link>
+                        <p className="text-xs sm:text-sm md:text-base font-medium tracking-widest uppercase opacity-90">Premium Beauty Arrivals</p>
+                        <Link href={`/shop?category=${brand.slug || brand.id}`} prefetch={false} className="mt-4 sm:mt-6 inline-block bg-white text-black px-6 sm:px-8 py-2 sm:py-3 rounded shadow-md text-[10px] sm:text-xs font-bold hover:bg-[#d81b60] hover:text-white transition-all transform hover:scale-105 uppercase tracking-wide">Explore Brand</Link>
                      </div>
                   </div>
-                  <div className="w-full lg:w-[65%] flex flex-col p-4 md:p-6 bg-[#faf6f0] relative">
-                     <div className="flex overflow-x-auto gap-4 pb-6 scrollbar-hide snap-x items-stretch">
+                  <div className="w-full lg:w-[65%] xl:w-[70%] flex flex-col p-3 sm:p-4 md:p-6 bg-[#faf6f0] relative">
+                     <div className="flex overflow-x-auto gap-3 sm:gap-4 pb-4 sm:pb-6 scrollbar-hide snap-x items-stretch">
                         {displayProducts.slice(0, 10).map((prod: any, pIdx: number) => {
                            const imgUrl = getProductImage(prod);
                            const currentPrice = prod.sale_price || prod.price || "0";
@@ -406,24 +409,24 @@ export default function HomePageClient({
                            const safeSlug = prod.slug || prod.id;
 
                            return (
-                             <div key={`p1-${brand.id}-${prod.id}-${pIdx}`} className="min-w-[160px] md:min-w-[220px] max-w-[240px] bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col snap-start group hover:shadow-lg transition-shadow">
-                                <div className="relative h-40 md:h-52 p-4 bg-white rounded-t-lg">
+                             <div key={`p1-${brand.id}-${prod.id}-${pIdx}`} className="min-w-[140px] sm:min-w-[180px] md:min-w-[220px] max-w-[160px] sm:max-w-[200px] md:max-w-[240px] bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col snap-start group hover:shadow-lg transition-shadow">
+                                <div className="relative h-32 sm:h-40 md:h-52 p-2 sm:p-4 bg-white rounded-t-lg">
                                    <Link href={`/shop/${safeSlug}`} prefetch={false} className="absolute inset-0 z-10" />
                                    {imgUrl && <img src={imgUrl} alt={prod.name} className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 relative z-0 pointer-events-none" />}
                                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-20 pointer-events-none">
-                                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); addItem({ id: prod.id, name: prod.name, slug: safeSlug, price: currentPrice, quantity: 1, image: imgUrl }); }} className="bg-white p-3 rounded-full shadow-lg text-[#d81b60] hover:bg-[#d81b60] hover:text-white transition-colors pointer-events-auto">
-                                        <ShoppingCart className="w-5 h-5" />
+                                      <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); addItem({ id: prod.id, name: prod.name, slug: safeSlug, price: currentPrice, quantity: 1, image: imgUrl }); }} className="bg-white p-2 sm:p-3 rounded-full shadow-lg text-[#d81b60] hover:bg-[#d81b60] hover:text-white transition-colors pointer-events-auto">
+                                        <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
                                       </button>
                                    </div>
                                 </div>
 
-                                <div className="p-3 md:p-4 text-center border-t border-gray-100 flex-1 flex flex-col justify-between">
-                                   <Link href={`/shop/${safeSlug}`} prefetch={false}><h4 className="text-[11px] md:text-sm font-semibold text-gray-800 line-clamp-2 mb-2 group-hover:text-[#d81b60] transition-colors">{prod.name}</h4></Link>
-                                   <div className={`mt-auto ${style.bg} text-white py-2 px-2 rounded flex items-center justify-center gap-2`}>
+                                <div className="p-2.5 sm:p-3 md:p-4 text-center border-t border-gray-100 flex-1 flex flex-col justify-between">
+                                   <Link href={`/shop/${safeSlug}`} prefetch={false}><h4 className="text-[10px] sm:text-[11px] md:text-sm font-semibold text-gray-800 line-clamp-2 mb-2 group-hover:text-[#d81b60] transition-colors leading-tight">{prod.name}</h4></Link>
+                                   <div className={`mt-auto ${style.bg} text-white py-1.5 sm:py-2 px-2 rounded flex items-center justify-center gap-1.5 sm:gap-2`}>
                                       {originalPrice !== currentPrice && (
-                                        <span className="text-[10px] md:text-xs line-through opacity-70">${Number(originalPrice).toLocaleString()}</span>
+                                        <span className="text-[9px] sm:text-[10px] md:text-xs line-through opacity-70">${Number(originalPrice).toLocaleString()}</span>
                                       )}
-                                      <span className="text-xs md:text-sm font-bold">${Number(currentPrice).toLocaleString()}</span>
+                                      <span className="text-[11px] sm:text-xs md:text-sm font-bold">${Number(currentPrice).toLocaleString()}</span>
                                    </div>
                                 </div>
                              </div>
@@ -442,22 +445,22 @@ export default function HomePageClient({
 
       {/* EDITOR'S SPOTLIGHT */}
       {products.length > 0 && (
-        <section className="py-12 md:py-16 bg-[#fdf2f7] border-y border-pink-100">
-           <div className="max-w-[1600px] mx-auto px-4 sm:px-6">
-              <div className="flex items-center justify-between mb-6 md:mb-8">
+        <section className="py-8 sm:py-12 md:py-16 bg-[#fdf2f7] border-y border-pink-100">
+           <div className="max-w-[1600px] mx-auto px-3 sm:px-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 md:mb-8">
                  <div>
-                    <h2 className="text-2xl md:text-4xl font-black text-gray-900 flex items-center gap-2">
-                       <Star className="text-[#ff2a85] fill-[#ff2a85] w-6 h-6 md:w-8 md:h-8" /> 
+                    <h2 className="text-xl sm:text-2xl md:text-4xl font-black text-gray-900 flex items-center gap-1.5 sm:gap-2">
+                       <Star className="text-[#ff2a85] fill-[#ff2a85] w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" /> 
                        Editor's <span className="text-[#ff2a85]">Spotlight</span>
                     </h2>
-                    <p className="text-gray-500 mt-1 text-xs md:text-sm font-medium">Curated must-haves of the week.</p>
+                    <p className="text-gray-500 mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm font-medium">Curated must-haves of the week.</p>
                  </div>
-                 <Link href="/shop" prefetch={false} className="text-xs md:text-sm font-bold text-gray-900 hover:text-[#ff2a85] underline transition-colors">
+                 <Link href="/shop" prefetch={false} className="text-[10px] sm:text-xs md:text-sm font-bold text-gray-900 hover:text-[#ff2a85] underline transition-colors whitespace-nowrap">
                    View All Picks
                  </Link>
               </div>
 
-              <div className="flex flex-col lg:flex-row gap-6">
+              <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                  {/* Left Big Hero Product */}
                  <div className="w-full lg:w-1/2">
                     {getSafeItems(products, 0, 1).map((prod: any, idx: number) => {
@@ -465,16 +468,16 @@ export default function HomePageClient({
                        const safeSlug = prod.slug || prod.id;
 
                        return (
-                          <div key={`hero-${prod.id}-${idx}`} className="bg-white rounded-2xl shadow-sm overflow-hidden group h-full flex flex-col relative border border-pink-100">
-                             <div className="absolute top-4 right-4 bg-[#ff2a85] text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full z-10 uppercase tracking-wider">
+                          <div key={`hero-${prod.id}-${idx}`} className="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden group h-full flex flex-col relative border border-pink-100">
+                             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-[#ff2a85] text-white text-[9px] sm:text-[10px] md:text-xs font-bold px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full z-10 uppercase tracking-wider">
                                 TOP PICK
                              </div>
-                             <Link href={`/shop/${safeSlug}`} prefetch={false} className="relative w-full h-80 md:h-[420px] p-6 flex items-center justify-center bg-white flex-shrink-0">
+                             <Link href={`/shop/${safeSlug}`} prefetch={false} className="relative w-full h-56 sm:h-80 md:h-[380px] lg:h-[420px] p-4 sm:p-6 flex items-center justify-center bg-white flex-shrink-0">
                                 {imgUrl && <img src={imgUrl} alt={prod.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500" />}
                              </Link>
-                             <div className="p-6 flex flex-col justify-between flex-1 bg-white">
+                             <div className="p-4 sm:p-6 flex flex-col justify-between flex-1 bg-white">
                                 <Link href={`/shop/${safeSlug}`} prefetch={false}>
-                                   <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#ff2a85] transition-colors line-clamp-1">{prod.name}</h3>
+                                   <h3 className="text-base sm:text-xl md:text-2xl font-bold text-gray-900 mb-2 group-hover:text-[#ff2a85] transition-colors line-clamp-1">{prod.name}</h3>
                                 </Link>
                              </div>
                           </div>
@@ -483,31 +486,32 @@ export default function HomePageClient({
                  </div>
 
                  {/* Right 2x2 Grid Products */}
-                 <div className="w-full lg:w-1/2 grid grid-cols-2 gap-4 md:gap-6">
+                 <div className="w-full lg:w-1/2 grid grid-cols-2 gap-2.5 sm:gap-4 md:gap-6">
                     {getSafeItems(products, 1, 4).map((prod: any, idx: number) => {
                        const imgUrl = getProductImage(prod);
                        const currentPrice = prod.sale_price || prod.price || "0";
                        const safeSlug = prod.slug || prod.id;
 
                        return (
-                          <div key={`sub-${prod.id}-${idx}`} className="bg-white rounded-2xl shadow-sm overflow-hidden group flex flex-col justify-between p-4 border border-pink-100 hover:shadow-md transition-all">
-                             <Link href={`/shop/${safeSlug}`} prefetch={false} className="h-36 md:h-48 w-full p-2 flex items-center justify-center bg-white flex-shrink-0 relative">
+                          <div key={`sub-${prod.id}-${idx}`} className="bg-white rounded-xl sm:rounded-2xl shadow-sm overflow-hidden group flex flex-col justify-between p-2.5 sm:p-4 border border-pink-100 hover:shadow-md transition-all">
+                             <Link href={`/shop/${safeSlug}`} prefetch={false} className="h-28 sm:h-36 md:h-48 w-full p-1.5 sm:p-2 flex items-center justify-center bg-white flex-shrink-0 relative">
                                 {imgUrl && <img src={imgUrl} alt={prod.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-500" />}
                              </Link>
-                             <div className="mt-3 flex flex-col justify-between flex-1">
+                             <div className="mt-2 sm:mt-3 flex flex-col justify-between flex-1">
                                 <Link href={`/shop/${safeSlug}`} prefetch={false}>
-                                   <h4 className="text-xs md:text-sm font-semibold text-gray-700 line-clamp-1 mb-2 group-hover:text-[#ff2a85]">{prod.name}</h4>
+                                   <h4 className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-700 line-clamp-1 mb-1.5 sm:mb-2 group-hover:text-[#ff2a85]">{prod.name}</h4>
                                 </Link>
                                 <div className="flex items-center justify-between mt-auto">
-                                   <span className="text-sm md:text-base font-extrabold text-gray-900">${Number(currentPrice).toLocaleString()}</span>
+                                   <span className="text-xs sm:text-sm md:text-base font-extrabold text-gray-900">${Number(currentPrice).toLocaleString()}</span>
                                    <button 
                                       onClick={(e) => { 
                                          e.preventDefault(); 
                                          addItem({ id: prod.id, name: prod.name, slug: safeSlug, price: currentPrice, quantity: 1, image: imgUrl }); 
                                       }} 
-                                      className="w-8 h-8 rounded-full bg-pink-50 text-[#ff2a85] flex items-center justify-center hover:bg-[#ff2a85] hover:text-white transition-colors"
+                                      className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-pink-50 text-[#ff2a85] flex items-center justify-center hover:bg-[#ff2a85] hover:text-white transition-colors"
+                                      aria-label="Add to cart"
                                    >
-                                      <ShoppingCart className="w-4 h-4" />
+                                      <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4" />
                                    </button>
                                 </div>
                              </div>
@@ -522,17 +526,17 @@ export default function HomePageClient({
 
       {/* FLASH SALE */}
       {products.length > 0 && (
-        <section className="py-16 bg-[#fdfbf7] border-y border-gray-200">
-           <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
-              <div className="text-center mb-12">
-                 <h2 className="text-3xl md:text-5xl font-extrabold text-gray-900 uppercase tracking-widest flex items-center justify-center gap-3">
-                    <Zap className="text-amber-500 fill-current w-8 h-8 md:w-10 md:h-10" />
+        <section className="py-10 sm:py-16 bg-[#fdfbf7] border-y border-gray-200">
+           <div className="max-w-[1400px] mx-auto px-3 sm:px-6">
+              <div className="text-center mb-8 sm:mb-12">
+                 <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-gray-900 uppercase tracking-widest flex items-center justify-center gap-2 sm:gap-3">
+                    <Zap className="text-amber-500 fill-current w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10" />
                     Flash <span className="text-amber-500 font-light">Sale</span>
                  </h2>
-                 <p className="text-gray-500 mt-4 text-xs md:text-sm tracking-[0.2em] uppercase font-semibold">Limited Time • Exclusive Elegance</p>
+                 <p className="text-gray-500 mt-2 sm:mt-4 text-[10px] sm:text-xs md:text-sm tracking-[0.2em] uppercase font-semibold">Limited Time • Exclusive Elegance</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2 md:flex md:flex-row md:max-h-none md:overflow-y-visible md:overflow-x-auto md:pb-6 md:pr-0 md:snap-x md:items-stretch">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:flex md:flex-row md:max-h-none md:overflow-y-visible md:overflow-x-auto md:pb-6 md:pr-0 md:snap-x md:items-stretch gap-2.5 sm:gap-4 max-h-[500px] sm:max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
                  {getSafeItems(products, 5, 12).map((prod: any, idx: number) => { 
                     const imgUrl = getProductImage(prod);
                     const currentPrice = prod.sale_price || prod.price || "0";
@@ -540,24 +544,24 @@ export default function HomePageClient({
                     const safeSlug = prod.slug || prod.id;
                     
                     return (
-                       <div key={`flash-${prod.id}-${idx}`} className="w-full md:w-[320px] md:min-w-[320px] md:flex-shrink-0 md:snap-start bg-white rounded-none border border-gray-100 p-4 md:p-6 hover:shadow-xl transition-all duration-300 flex flex-col group relative">
-                          <Link href={`/shop/${safeSlug}`} prefetch={false} className="bg-transparent h-40 sm:h-48 md:h-64 p-2 md:p-4 flex items-center justify-center mb-4 md:mb-6 relative overflow-hidden flex-shrink-0">
+                       <div key={`flash-${prod.id}-${idx}`} className="w-full md:w-[260px] lg:w-[320px] md:min-w-[260px] lg:min-w-[320px] md:flex-shrink-0 md:snap-start bg-white rounded-none border border-gray-100 p-3 sm:p-4 md:p-6 hover:shadow-xl transition-all duration-300 flex flex-col group relative">
+                          <Link href={`/shop/${safeSlug}`} prefetch={false} className="bg-transparent h-28 sm:h-40 md:h-64 p-1 sm:p-2 md:p-4 flex items-center justify-center mb-3 sm:mb-4 md:mb-6 relative overflow-hidden flex-shrink-0">
                              {imgUrl && <img src={imgUrl} alt={prod.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-700" />}
                           </Link>
 
                           <div className="flex-1 flex flex-col text-center">
                              <Link href={`/shop/${safeSlug}`} prefetch={false}>
-                                <h4 className="text-[11px] sm:text-xs md:text-base font-semibold text-gray-800 line-clamp-2 mb-3 group-hover:text-amber-600 transition-colors">{prod.name}</h4>
+                                <h4 className="text-[10px] sm:text-xs md:text-base font-semibold text-gray-800 line-clamp-2 mb-2 sm:mb-3 group-hover:text-amber-600 transition-colors leading-tight">{prod.name}</h4>
                              </Link>
                              
-                             <div className="mt-auto flex flex-col items-center gap-4">
-                                <div className="flex items-center gap-2 md:gap-3">
+                             <div className="mt-auto flex flex-col items-center gap-2.5 sm:gap-4">
+                                <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-wrap justify-center">
                                    {originalPrice !== currentPrice && (
-                                     <span className="text-[10px] md:text-sm text-gray-400 line-through">${Number(originalPrice).toLocaleString()}</span>
+                                     <span className="text-[9px] sm:text-[10px] md:text-sm text-gray-400 line-through">${Number(originalPrice).toLocaleString()}</span>
                                    )}
-                                   <span className="text-sm sm:text-lg md:text-2xl font-black text-gray-900">${Number(currentPrice).toLocaleString()}</span>
+                                   <span className="text-xs sm:text-base md:text-2xl font-black text-gray-900">${Number(currentPrice).toLocaleString()}</span>
                                 </div>
-                                <button onClick={(e) => { e.preventDefault(); addItem({ id: prod.id, name: prod.name, slug: safeSlug, price: currentPrice, quantity: 1, image: imgUrl }); }} className="w-full bg-transparent border-2 border-black text-black py-2 md:py-3 text-[10px] md:text-sm font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors flex items-center justify-center gap-2">
+                                <button onClick={(e) => { e.preventDefault(); addItem({ id: prod.id, name: prod.name, slug: safeSlug, price: currentPrice, quantity: 1, image: imgUrl }); }} className="w-full bg-transparent border sm:border-2 border-black text-black py-1.5 sm:py-2 md:py-3 text-[9px] sm:text-[10px] md:text-sm font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors flex items-center justify-center gap-2">
                                    Add to Bag
                                 </button>
                              </div>
@@ -574,7 +578,10 @@ export default function HomePageClient({
       <style dangerouslySetInnerHTML={{__html: `
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 6px; }
+        @media (min-width: 640px) {
+          .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        }
         .custom-scrollbar::-webkit-scrollbar-track { background: #fdfbf7; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #9ca3af; }

@@ -12,11 +12,15 @@ import {
   Menu,
   X,
   ChevronRight,
+  ChevronDown,
   Heart,
   Loader2,
   TrendingUp,
   ArrowRight,
   Sparkles,
+  Gift,
+  Tag,
+  Crown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -35,6 +39,9 @@ interface SuggestionProduct {
   category: string;
 }
 
+// -----------------------------------------------------------------
+// Helper Component: Syncs URL search query with state
+// -----------------------------------------------------------------
 function SearchParamsSync({ setSearchQuery }: { setSearchQuery: (q: string) => void }) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -58,8 +65,16 @@ export default function Navbar() {
   const { totalItems } = useCart();
   const { wishlist } = useWishlist();
 
-  const [isOpen, setIsOpen] = useState(false);
+  // Navigation Mobile Drawer State
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  
+  // Search Focus & Mobile Expand States
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
+
+  // Expanded Accordions for Mobile Drawer
+  const [expandedMobileCategory, setExpandedMobileCategory] = useState<string | null>(null);
+  const [mobileBrandTab, setMobileBrandTab] = useState<"popular" | "luxe">("popular");
 
   // Search States
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,7 +87,7 @@ export default function Navbar() {
   const [menuCategories, setMenuCategories] = useState<MegaMenuCategories>({});
   const [menuBrands, setMenuBrands] = useState<MegaMenuBrands>({ popular: [], luxe: [] });
 
-  // 1. Fetch Dynamic Mega Menu Data from WooCommerce API
+  // Fetch Dynamic Mega Menu Data from WooCommerce API
   useEffect(() => {
     async function loadMegaMenu() {
       try {
@@ -89,14 +104,27 @@ export default function Navbar() {
     loadMegaMenu();
   }, []);
 
-  // Reset navigation states on pathname change
+  // Lock body scroll when mobile drawer is open
   useEffect(() => {
-    setIsOpen(false);
+    if (isMobileDrawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isMobileDrawerOpen]);
+
+  // Reset states on page navigation
+  useEffect(() => {
+    setIsMobileDrawerOpen(false);
     setIsSearchFocused(false);
+    setIsMobileSearchExpanded(false);
     setActiveMegaMenu(null);
   }, [pathname]);
 
-  // Click outside search container to dismiss popover
+  // Click outside search container to close dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchBarRef.current && !searchBarRef.current.contains(e.target as Node)) {
@@ -107,7 +135,7 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounced Live Search Fetching
+  // Debounced Search API Fetcher
   useEffect(() => {
     if (!searchQuery.trim()) {
       setSuggestions([]);
@@ -133,7 +161,7 @@ export default function Navbar() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
-  // Submit search page
+  // Handle Search Submission
   const handleSearchSubmit = (e?: React.FormEvent, customQuery?: string) => {
     if (e) e.preventDefault();
     const queryToUse = customQuery !== undefined ? customQuery : searchQuery;
@@ -141,19 +169,20 @@ export default function Navbar() {
     if (queryToUse.trim()) {
       router.push(`/search?q=${encodeURIComponent(queryToUse.trim())}`);
       setIsSearchFocused(false);
+      setIsMobileSearchExpanded(false);
     }
   };
 
-  // -------------------------------------------------------------
-  // DYNAMIC DESKTOP NAVIGATION ITEMS GENERATION
-  // -------------------------------------------------------------
-  const categoryKeys = Object.keys(menuCategories);
+  const toggleMobileCategory = (catKey: string) => {
+    setExpandedMobileCategory(expandedMobileCategory === catKey ? null : catKey);
+  };
 
-  // Generates Top Nav Links from WooCommerce Categories (e.g. MAKEUP, SKIN, HAIR, FRAGRANCE)
+  // Generate Navigation Items
+  const categoryKeys = Object.keys(menuCategories);
   const categoryNavItems = categoryKeys.map((catName) => ({
     name: catName.toUpperCase(),
     hasMegaMenu: true,
-    id: catName, // Passes exact category key to MegaMenu
+    id: catName,
     href: `/shop?category=${encodeURIComponent(catName.toLowerCase())}`,
   }));
 
@@ -175,51 +204,62 @@ export default function Navbar() {
       <Suspense fallback={null}>
         <SearchParamsSync setSearchQuery={setSearchQuery} />
       </Suspense>
+
       <header
-        className="sticky top-0 w-full bg-white z-50 border-b border-gray-200 shadow-sm"
+        className="sticky top-0 w-full bg-white z-40 border-b border-gray-100 shadow-sm"
         onMouseLeave={() => setActiveMegaMenu(null)}
       >
-        {/* --- MAIN HEADER STRIP --- */}
-        <div className="max-w-[1600px] mx-auto w-full px-4 sm:px-6 md:px-8 h-16 md:h-20 flex items-center justify-between gap-4 bg-white relative z-50">
-          {/* Left: Mobile Toggle / Logo */}
-          <div className="flex items-center gap-3">
+        {/* ================================================================= */}
+        {/* MAIN HEADER STRIP (Mobile / Tablet / Desktop)                      */}
+        {/* ================================================================= */}
+        <div className="max-w-[1600px] mx-auto w-full px-2.5 sm:px-6 md:px-8 h-14 sm:h-16 md:h-20 flex items-center justify-between gap-1.5 sm:gap-4 bg-white relative z-50">
+          
+          {/* LEFT: Menu Toggle & Brand Logo */}
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <button
-              onClick={() => setIsOpen(true)}
-              className="p-2 -ml-2 text-gray-900 focus:outline-none md:hidden"
-              aria-label="Open Menu"
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className="p-1 sm:p-2 -ml-1 text-gray-900 hover:text-[#d81b60] focus:outline-none md:hidden transition-colors"
+              aria-label="Open Mobile Menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
-            <Link href="/" className="flex flex-col group">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-[0.15em] uppercase leading-none group-hover:text-[#d81b60] transition-colors">
+            <Link href="/" className="flex flex-col group select-none">
+              <h1 className="text-base sm:text-2xl md:text-3xl font-black text-gray-900 tracking-[0.1em] sm:tracking-[0.15em] uppercase leading-none group-hover:text-[#d81b60] transition-colors">
                 VÉLOURS
               </h1>
-              <span className="text-[8px] sm:text-[9px] text-gray-400 tracking-[0.3em] uppercase mt-0.5 font-semibold">
+              <span className="text-[6.5px] sm:text-[9px] text-gray-400 tracking-[0.2em] sm:tracking-[0.3em] uppercase mt-0.5 font-semibold">
                 Atelier
               </span>
             </Link>
           </div>
 
-          {/* Center: Search Bar */}
-          <div className="flex-1 max-w-2xl mx-2 md:mx-6 relative" ref={searchBarRef}>
+          {/* =============================================================== */}
+          {/* CENTER: DESKTOP & TABLET SEARCH BAR                              */}
+          {/* =============================================================== */}
+          <div className="hidden md:flex flex-1 max-w-xl lg:max-w-2xl mx-4 lg:mx-8 relative" ref={searchBarRef}>
             <form
               onSubmit={(e) => handleSearchSubmit(e)}
-              className="relative flex items-center w-full"
+              className="relative flex items-center w-full group"
             >
-              <Search className="absolute left-3.5 w-4 h-4 md:w-5 md:h-5 text-gray-400 pointer-events-none" />
+              <div className="absolute left-4 z-10 text-gray-400 group-focus-within:text-[#d81b60] transition-colors">
+                <Search className="w-4 h-4 lg:w-4.5 lg:h-4.5" />
+              </div>
 
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
-                placeholder="Search for beauty, makeup, perfumes, brands..."
-                className="w-full bg-gray-100/80 hover:bg-gray-100 focus:bg-white border border-transparent focus:border-[#d81b60] rounded-full py-2.5 md:py-3 pl-10 md:pl-11 pr-20 text-xs sm:text-sm font-medium text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:shadow-[0_0_0_4px_rgba(216,27,96,0.1)]"
+                placeholder="Search formulas, lipsticks, skincare, perfumes..."
+                className="w-full bg-gray-50/80 hover:bg-gray-100/80 focus:bg-white border border-gray-200/80 focus:border-[#d81b60] rounded-full py-2.5 lg:py-3 pl-11 pr-24 text-xs lg:text-sm font-medium text-gray-900 placeholder-gray-400 outline-none transition-all duration-300 shadow-inner focus:shadow-[0_0_20px_rgba(216,27,96,0.12)] focus:ring-2 focus:ring-pink-500/10"
               />
 
-              <div className="absolute right-2 flex items-center gap-1.5">
-                {isLoading && <Loader2 className="w-4 h-4 text-[#d81b60] animate-spin" />}
+              <div className="absolute right-2.5 flex items-center gap-1.5 z-10">
+                {isLoading && (
+                  <Loader2 className="w-4 h-4 text-[#d81b60] animate-spin mr-1" />
+                )}
+
                 {searchQuery && !isLoading && (
                   <button
                     type="button"
@@ -227,69 +267,71 @@ export default function Navbar() {
                       setSearchQuery("");
                       setSuggestions([]);
                     }}
-                    className="p-1 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors"
+                    className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 )}
+
                 <button
                   type="submit"
-                  className="bg-gray-900 hover:bg-[#d81b60] text-white p-2 md:px-4 md:py-1.5 rounded-full text-xs font-bold transition-colors flex items-center gap-1"
+                  className="bg-gray-900 hover:bg-[#d81b60] text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 shadow-sm active:scale-95 flex items-center gap-1"
                 >
-                  <Search className="w-3.5 h-3.5 md:hidden" />
-                  <span className="hidden md:inline">Search</span>
+                  <span>Search</span>
                 </button>
               </div>
             </form>
 
-            {/* AUTOCOMPLETE DROPDOWN */}
+            {/* AUTOCOMPLETE POPUP DROPDOWN */}
             <AnimatePresence>
               {isSearchFocused && (
                 <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  initial={{ opacity: 0, y: 12, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.98 }}
-                  transition={{ duration: 0.15 }}
-                  className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 max-h-[80vh] overflow-y-auto custom-scrollbar"
+                  exit={{ opacity: 0, y: 12, scale: 0.98 }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  className="absolute top-full left-0 w-full mt-2.5 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden z-50 max-h-[75vh] overflow-y-auto custom-scrollbar"
                 >
                   {searchQuery.trim().length > 0 ? (
-                    <div className="p-3 sm:p-4">
+                    <div className="p-4">
                       {isLoading && suggestions.length === 0 ? (
-                        <div className="py-8 text-center text-xs sm:text-sm text-gray-400 flex items-center justify-center gap-2 font-medium">
+                        <div className="py-10 text-center text-xs text-gray-400 flex items-center justify-center gap-2 font-medium">
                           <Loader2 className="w-4 h-4 animate-spin text-[#d81b60]" />
-                          Searching catalog for "{searchQuery}"...
+                          Searching store catalog for "{searchQuery}"...
                         </div>
                       ) : suggestions.length > 0 ? (
                         <div>
-                          <div className="flex items-center justify-between px-2 pb-2.5 mb-2 border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
-                            <span>Products ({suggestions.length})</span>
-                            <span className="text-[#d81b60]">Instant Matches</span>
+                          <div className="flex items-center justify-between px-2 pb-3 mb-3 border-b border-gray-100 text-[11px] font-extrabold uppercase tracking-widest text-gray-400">
+                            <span>Product Suggestions ({suggestions.length})</span>
+                            <span className="text-[#d81b60] flex items-center gap-1">
+                              <Sparkles className="w-3 h-3" /> Live Results
+                            </span>
                           </div>
 
-                          <div className="flex flex-col gap-1.5">
+                          <div className="flex flex-col gap-2">
                             {suggestions.map((item) => (
                               <Link
                                 key={item.id}
                                 href={`/shop/${item.slug}`}
                                 onClick={() => setIsSearchFocused(false)}
-                                className="flex items-center gap-3.5 p-2 rounded-xl hover:bg-pink-50/80 transition-all group border border-transparent hover:border-pink-100 relative"
+                                className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-pink-50/60 transition-all group border border-transparent hover:border-pink-100/80"
                               >
-                                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center p-1 border border-gray-100 relative">
+                                <div className="w-12 h-12 bg-white rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center p-1 border border-gray-100 shadow-sm group-hover:border-pink-200">
                                   <img
                                     src={item.image}
                                     alt={item.name}
-                                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform"
+                                    className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform"
                                   />
                                 </div>
 
                                 <div className="flex flex-col min-w-0 flex-1">
                                   <div className="flex items-center gap-2">
-                                    <h4 className="text-xs sm:text-sm font-bold text-gray-800 line-clamp-1 group-hover:text-[#d81b60] transition-colors">
+                                    <h4 className="text-xs lg:text-sm font-bold text-gray-900 line-clamp-1 group-hover:text-[#d81b60] transition-colors">
                                       {item.name}
                                     </h4>
                                     {item.on_sale && (
-                                      <span className="bg-red-500 text-white text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded">
-                                        Sale
+                                      <span className="bg-red-500 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded shadow-sm">
+                                        SALE
                                       </span>
                                     )}
                                   </div>
@@ -301,47 +343,49 @@ export default function Navbar() {
                                   )}
 
                                   <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-xs sm:text-sm font-black text-gray-900">
+                                    <span className="text-xs lg:text-sm font-black text-gray-900">
                                       ${Number(item.price).toLocaleString()}
                                     </span>
                                     {item.on_sale && Number(item.regular_price) > Number(item.price) && (
-                                      <span className="text-[10px] sm:text-xs text-gray-400 line-through font-semibold">
+                                      <span className="text-[11px] text-gray-400 line-through">
                                         ${Number(item.regular_price).toLocaleString()}
                                       </span>
                                     )}
                                   </div>
                                 </div>
 
-                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#d81b60] transition-colors flex-shrink-0" />
+                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#d81b60] group-hover:translate-x-0.5 transition-all flex-shrink-0" />
                               </Link>
                             ))}
                           </div>
 
                           <button
                             onClick={() => handleSearchSubmit()}
-                            className="w-full mt-3 py-2.5 bg-gray-900 hover:bg-[#d81b60] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 group shadow-sm"
+                            className="w-full mt-4 py-3 bg-gray-900 hover:bg-[#d81b60] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 group shadow-md"
                           >
-                            View All Results for "{searchQuery}"
+                            Explore All Results for "{searchQuery}"
                             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                           </button>
                         </div>
                       ) : (
-                        <div className="py-6 text-center text-xs sm:text-sm text-gray-500 flex flex-col items-center justify-center gap-1.5">
+                        <div className="py-8 text-center text-xs text-gray-500 flex flex-col items-center justify-center gap-1.5">
                           <p className="font-semibold text-gray-700">No instant matches found</p>
                           <button
                             onClick={() => handleSearchSubmit()}
                             className="text-xs font-bold text-[#d81b60] hover:underline"
                           >
-                            Press Enter to search full store
+                            Press Enter to search full catalog
                           </button>
                         </div>
                       )}
                     </div>
                   ) : (
                     <div className="p-4">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
-                        <TrendingUp className="w-3.5 h-3.5 text-[#d81b60]" />
-                        Popular Searches
+                      <div className="flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                        <span className="flex items-center gap-1.5">
+                          <TrendingUp className="w-3.5 h-3.5 text-[#d81b60]" />
+                          Popular Searches
+                        </span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {POPULAR_SEARCHES.map((term, i) => (
@@ -351,7 +395,7 @@ export default function Navbar() {
                               setSearchQuery(term);
                               handleSearchSubmit(undefined, term);
                             }}
-                            className="flex items-center gap-1.5 bg-gray-50 hover:bg-pink-50 text-gray-700 hover:text-[#d81b60] text-xs font-semibold px-3 py-1.5 rounded-full border border-gray-100 hover:border-pink-200 transition-all cursor-pointer"
+                            className="flex items-center gap-1.5 bg-gray-50 hover:bg-pink-50 text-gray-700 hover:text-[#d81b60] text-xs font-medium px-3.5 py-2 rounded-full border border-gray-100 hover:border-pink-200 transition-all cursor-pointer active:scale-95"
                           >
                             <Sparkles className="w-3 h-3 text-[#d81b60]" />
                             {term}
@@ -365,25 +409,51 @@ export default function Navbar() {
             </AnimatePresence>
           </div>
 
-          {/* Right: User Actions */}
-          <div className="flex items-center justify-end gap-3 sm:gap-5 text-gray-900">
-            <Link href="/wishlist" className="relative hover:text-[#d81b60] transition-colors hidden sm:block">
-              <Heart className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
+          {/* =============================================================== */}
+          {/* RIGHT: ALL ACTION ICONS VISIBLE ON MOBILE & DESKTOP             */}
+          {/* =============================================================== */}
+          <div className="flex items-center justify-end gap-0.5 sm:gap-2.5 md:gap-3 text-gray-900">
+            {/* 1. Mobile Search Button (< md) */}
+            <button
+              onClick={() => setIsMobileSearchExpanded(!isMobileSearchExpanded)}
+              className="p-1.5 sm:p-2 md:hidden text-gray-800 hover:text-[#d81b60] transition-colors"
+              aria-label="Toggle Search Bar"
+            >
+              <Search className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            </button>
+
+            {/* 2. Wishlist Icon Badge (Mobile & Desktop) */}
+            <Link
+              href="/wishlist"
+              className="p-1.5 sm:p-2 relative text-gray-800 hover:text-[#d81b60] transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart className="w-4.5 h-4.5 sm:w-5 sm:h-5 md:w-6 md:h-6 stroke-[1.6]" />
               {wishlist.length > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-[#d81b60] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 bg-[#d81b60] text-white text-[8px] sm:text-[9px] font-bold w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center">
                   {wishlist.length}
                 </span>
               )}
             </Link>
 
-            <Link href="/account" className="hover:text-[#d81b60] transition-colors hidden sm:block">
-              <User className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
+            {/* 3. Account Icon (VISIBLE ON ALL SCREENS, INCLUDING MOBILE) */}
+            <Link
+              href="/account"
+              className="p-1.5 sm:p-2 text-gray-800 hover:text-[#d81b60] transition-colors"
+              aria-label="Account"
+            >
+              <User className="w-4.5 h-4.5 sm:w-5 sm:h-5 md:w-6 md:h-6 stroke-[1.6]" />
             </Link>
 
-            <Link href="/cart" className="relative hover:text-[#d81b60] transition-colors">
-              <ShoppingBag className="w-5 h-5 md:w-6 md:h-6 stroke-[1.5]" />
+            {/* 4. Cart Icon Badge (Mobile & Desktop) */}
+            <Link
+              href="/cart"
+              className="p-1.5 sm:p-2 relative text-gray-800 hover:text-[#d81b60] transition-colors"
+              aria-label="Cart"
+            >
+              <ShoppingBag className="w-4.5 h-4.5 sm:w-5 sm:h-5 md:w-6 md:h-6 stroke-[1.6]" />
               {totalItems > 0 && (
-                <span className="absolute -top-1.5 -right-2 bg-[#d81b60] text-[#fff] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute top-0.5 right-0.5 sm:top-1 sm:right-1 bg-[#d81b60] text-white text-[8px] sm:text-[9px] font-bold w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full flex items-center justify-center">
                   {totalItems}
                 </span>
               )}
@@ -391,8 +461,62 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* --- DYNAMIC DESKTOP NAVIGATION STRIP --- */}
-        <div className="hidden md:flex w-full bg-white border-t border-gray-100 items-center justify-center h-11 gap-8 lg:gap-12 relative z-40">
+        {/* ================================================================= */}
+        {/* MOBILE INTEGRATED SEARCH BAR EXPANSION (< md)                     */}
+        {/* ================================================================= */}
+        <AnimatePresence>
+          {isMobileSearchExpanded && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden bg-white border-t border-gray-100 p-3 px-4 shadow-md overflow-hidden relative z-40"
+            >
+              <form onSubmit={(e) => handleSearchSubmit(e)} className="relative flex items-center">
+                <Search className="absolute left-3.5 w-4 h-4 text-[#d81b60]" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search lipstick, serums, fragrance..."
+                  className="w-full bg-gray-100/90 border border-gray-200/80 focus:border-[#d81b60] focus:bg-white rounded-full py-2.5 pl-10 pr-20 text-xs font-medium text-gray-900 outline-none transition-all"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1.5 bg-[#d81b60] text-white px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider"
+                >
+                  Search
+                </button>
+              </form>
+
+              {/* Popular quick tags */}
+              <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pt-2.5 pb-1">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex-shrink-0">
+                  Popular:
+                </span>
+                {POPULAR_SEARCHES.map((term, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setSearchQuery(term);
+                      handleSearchSubmit(undefined, term);
+                    }}
+                    className="text-[10px] font-semibold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-full flex-shrink-0 hover:bg-pink-100 hover:text-[#d81b60]"
+                  >
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ================================================================= */}
+        {/* DESKTOP / LAPTOP NAVIGATION STRIP (md+)                           */}
+        {/* ================================================================= */}
+        <div className="hidden md:flex w-full bg-white border-t border-gray-100 items-center justify-center h-11 gap-4 md:gap-6 lg:gap-10 xl:gap-12 relative z-40 px-4">
           {DESKTOP_NAV_ITEMS.map((item) => (
             <div
               key={item.id}
@@ -414,7 +538,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* --- DYNAMIC MEGA MENU DROPDOWN --- */}
+        {/* MEGA MENU FLYOUT */}
         <MegaMenu
           activeMegaMenu={activeMegaMenu}
           setActiveMegaMenu={setActiveMegaMenu}
@@ -423,7 +547,7 @@ export default function Navbar() {
         />
       </header>
 
-      {/* BACKDROP */}
+      {/* SEARCH BACKDROP (DESKTOP) */}
       <AnimatePresence>
         {isSearchFocused && (
           <motion.div
@@ -431,55 +555,223 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setIsSearchFocused(false)}
-            className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-30"
+            className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-30 hidden md:block"
           />
         )}
       </AnimatePresence>
 
-      {/* MOBILE DRAWER WITH DYNAMIC CATEGORIES */}
+      {/* ================================================================= */}
+      {/* MOBILE FULL NAVIGATION DRAWER WITH CLEAN ACCORDIONS              */}
+      {/* ================================================================= */}
       <AnimatePresence>
-        {isOpen && (
+        {isMobileDrawerOpen && (
           <>
+            {/* Backdrop Overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)}
+              onClick={() => setIsMobileDrawerOpen(false)}
               className="fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm md:hidden"
             />
+
+            {/* Slide Drawer Sheet */}
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "tween", duration: 0.25 }}
-              className="fixed top-0 left-0 h-full w-[300px] sm:w-[350px] bg-white z-[70] shadow-2xl flex flex-col overflow-y-auto md:hidden"
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed top-0 left-0 h-full w-[300px] sm:w-[350px] bg-white z-[70] shadow-2xl flex flex-col overflow-hidden md:hidden"
             >
-              <div className="bg-white border-b border-gray-100 flex items-center justify-between px-6 py-5 sticky top-0 z-10">
+              {/* Drawer Top Branding */}
+              <div className="bg-white border-b border-gray-100 flex items-center justify-between px-5 py-4 sticky top-0 z-10">
                 <div className="flex flex-col">
                   <span className="font-black text-lg text-gray-900 tracking-widest uppercase">VÉLOURS</span>
-                  <span className="text-[8px] text-gray-400 tracking-[0.2em] uppercase">Atelier</span>
+                  <span className="text-[8px] text-gray-400 tracking-[0.2em] uppercase">Atelier Catalog</span>
                 </div>
                 <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 -mr-2 text-gray-400 hover:text-[#d81b60]"
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="p-1.5 text-gray-400 hover:text-[#d81b60] rounded-full hover:bg-gray-100 transition-colors"
                   aria-label="Close menu"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="flex flex-col py-2">
-                {DESKTOP_NAV_ITEMS.map((link) => (
+              {/* Quick Actions Shortcuts Bar */}
+              <div className="grid grid-cols-2 border-b border-gray-100 bg-gray-50/60 p-2.5 gap-2 text-xs font-bold text-gray-700">
+                <Link
+                  href="/wishlist"
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white border border-gray-100 hover:text-[#d81b60] shadow-sm"
+                >
+                  <Heart className="w-4 h-4 text-[#d81b60]" />
+                  Wishlist ({wishlist.length})
+                </Link>
+                <Link
+                  href="/account"
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="flex items-center justify-center gap-2 p-2 rounded-lg bg-white border border-gray-100 hover:text-[#d81b60] shadow-sm"
+                >
+                  <User className="w-4 h-4 text-gray-600" />
+                  My Account
+                </Link>
+              </div>
+
+              {/* Scrollable Navigation Body */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                
+                {/* 1. DYNAMIC CATEGORIES ACCORDION */}
+                <div>
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">
+                    Departments
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {categoryKeys.map((catKey) => {
+                      const isExpanded = expandedMobileCategory === catKey;
+                      const subGroups = menuCategories[catKey] || [];
+
+                      return (
+                        <div key={catKey} className="border border-gray-100 rounded-xl overflow-hidden bg-white">
+                          <button
+                            onClick={() => toggleMobileCategory(catKey)}
+                            className="w-full flex items-center justify-between p-3 text-left text-xs font-bold uppercase tracking-wider text-gray-900 bg-gray-50/50 hover:bg-pink-50/30 transition-colors"
+                          >
+                            <span>{catKey}</span>
+                            <ChevronDown
+                              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                                isExpanded ? "rotate-180 text-[#d81b60]" : ""
+                              }`}
+                            />
+                          </button>
+
+                          {/* Nested Subcategories */}
+                          {isExpanded && (
+                            <div className="p-3 bg-white border-t border-gray-100 space-y-3">
+                              <Link
+                                href={`/shop?category=${encodeURIComponent(catKey.toLowerCase())}`}
+                                onClick={() => setIsMobileDrawerOpen(false)}
+                                className="inline-block text-xs font-bold text-[#d81b60] hover:underline"
+                              >
+                                View All {catKey} &rarr;
+                              </Link>
+
+                              {subGroups.map((group, gIdx) => (
+                                <div key={gIdx} className="space-y-1">
+                                  <h5 className="text-[11px] font-bold text-gray-900 uppercase tracking-wider">
+                                    {group.title}
+                                  </h5>
+                                  <div className="flex flex-col gap-1 pl-2 border-l-2 border-gray-100">
+                                    {group.links.map((subLink, lIdx) => (
+                                      <Link
+                                        key={lIdx}
+                                        href={`/shop?category=${encodeURIComponent(subLink.toLowerCase())}`}
+                                        onClick={() => setIsMobileDrawerOpen(false)}
+                                        className="text-xs text-gray-600 hover:text-[#d81b60] py-1"
+                                      >
+                                        {subLink}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 2. BRANDS SECTION IN MOBILE DRAWER */}
+                <div className="pt-2 border-t border-gray-100">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">
+                    Featured Brands
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-100 rounded-lg mb-2">
+                    <button
+                      onClick={() => setMobileBrandTab("popular")}
+                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ${
+                        mobileBrandTab === "popular" ? "bg-white text-[#d81b60] shadow-sm" : "text-gray-600"
+                      }`}
+                    >
+                      Popular
+                    </button>
+                    <button
+                      onClick={() => setMobileBrandTab("luxe")}
+                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ${
+                        mobileBrandTab === "luxe" ? "bg-white text-[#d81b60] shadow-sm" : "text-gray-600"
+                      }`}
+                    >
+                      Luxe
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {(menuBrands[mobileBrandTab] || []).slice(0, 6).map((brand, bIdx) => {
+                      const name = typeof brand === "string" ? brand : brand.name || brand.title || "";
+                      const slug =
+                        typeof brand === "string"
+                          ? brand.toLowerCase().replace(/\s+/g, "-")
+                          : brand.slug || name.toLowerCase().replace(/\s+/g, "-");
+
+                      if (!name) return null;
+
+                      return (
+                        <Link
+                          key={bIdx}
+                          href={`/brands/${slug}`}
+                          onClick={() => setIsMobileDrawerOpen(false)}
+                          className="p-2 border border-gray-100 rounded-lg text-center text-xs font-semibold text-gray-700 bg-white hover:border-pink-200"
+                        >
+                          {name}
+                        </Link>
+                      );
+                    })}
+                  </div>
+
                   <Link
-                    key={`mob-${link.name}`}
-                    href={link.href}
-                    onClick={() => setIsOpen(false)}
-                    className="px-6 py-4 text-sm text-gray-800 font-bold hover:bg-gray-50 hover:text-[#d81b60] flex items-center justify-between group border-b border-gray-50 uppercase tracking-wider"
+                    href="/brands"
+                    onClick={() => setIsMobileDrawerOpen(false)}
+                    className="block text-center text-xs font-bold text-[#d81b60] mt-2 py-1"
                   >
-                    {link.name}
-                    <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-[#d81b60]" />
+                    View All Brands &rarr;
                   </Link>
-                ))}
+                </div>
+
+                {/* 3. CLEAN FEATURED LINKS (OFFERS & LUXE) */}
+                <div className="pt-2 border-t border-gray-100 space-y-2">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">
+                    Explore
+                  </div>
+
+                  <Link
+                    href="/shop?category=luxe"
+                    onClick={() => setIsMobileDrawerOpen(false)}
+                    className="flex items-center justify-between p-3 border border-gray-100 rounded-xl bg-gray-50/50 hover:bg-pink-50/30 text-xs font-bold text-gray-900 uppercase tracking-wider transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Crown className="w-4 h-4 text-[#d81b60]" />
+                      Luxe Collection
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </Link>
+
+                  <Link
+                    href="/offers"
+                    onClick={() => setIsMobileDrawerOpen(false)}
+                    className="flex items-center justify-between p-3 border border-pink-100 rounded-xl bg-pink-50/30 hover:bg-pink-50/80 text-xs font-bold text-[#d81b60] uppercase tracking-wider transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Gift className="w-4 h-4 text-[#d81b60]" />
+                      Special Offers & Deals
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-[#d81b60]" />
+                  </Link>
+                </div>
+
               </div>
             </motion.div>
           </>
