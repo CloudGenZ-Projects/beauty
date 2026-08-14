@@ -114,7 +114,7 @@ export default function SearchClient({ initialQuery, initialResults }: SearchCli
               return (
                 <Link 
                   key={prod.id} 
-                  href={`/shop/${prod.slug || prod.id}`} 
+                  href={`/shop/₹{prod.slug || prod.id}`} 
                   className="bg-white border border-gray-100 rounded-2xl p-3 sm:p-4 flex flex-col group hover:shadow-xl transition-all duration-300 relative overflow-hidden"
                 >
                   {/* Sale Badge */}
@@ -149,11 +149,11 @@ export default function SearchClient({ initialQuery, initialResults }: SearchCli
                     
                     <div className="mt-auto flex items-center gap-2">
                       <span className="font-black text-gray-900 text-sm sm:text-base">
-                        ${Number(prod.price || 0).toLocaleString()}
+                        ₹{Number(prod.price || 0).toLocaleString()}
                       </span>
                       {isOnSale && (
                         <span className="text-xs text-gray-400 line-through font-semibold">
-                          ${Number(prod.regular_price || 0).toLocaleString()}
+                          ₹{Number(prod.regular_price || 0).toLocaleString()}
                         </span>
                       )}
                     </div>

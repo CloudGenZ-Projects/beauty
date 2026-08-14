@@ -55,7 +55,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("loiseau_cart", cartString);
       
       // Save to Cookie
-      document.cookie = `loiseau_cart=${encodeURIComponent(cartString)}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `loiseau_cart=₹{encodeURIComponent(cartString)}; path=/; max-age=604800; SameSite=Lax`;
     }
   }, [items, isInitialized]);
 

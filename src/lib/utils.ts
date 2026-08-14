@@ -15,5 +15,5 @@ export function getCategoryImage(cat: any): string {
     if (cat.image.url) return cat.image.url;
   }
   const brandName = encodeURIComponent(cat?.name || "Brand");
-  return `https://ui-avatars.com/api/?name=${brandName}&background=ffffff&color=000000&size=256&font-size=0.3&bold=true`;
+  return `https://ui-avatars.com/api/?name=₹{brandName}&background=ffffff&color=000000&size=256&font-size=0.3&bold=true`;
 }

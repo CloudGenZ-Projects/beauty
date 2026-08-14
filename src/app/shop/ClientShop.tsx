@@ -1,11 +1,10 @@
-// app/shop/ClientShop.tsx
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Check } from "lucide-react";
 import { getProductImage } from "@/lib/utils"
 
 interface ClientShopProps {
@@ -15,6 +14,7 @@ interface ClientShopProps {
 
 export default function ClientShop({ initialProducts, category }: ClientShopProps) {
   const { addItem } = useCart();
+  const [addedItems, setAddedItems] = useState<{ [key: string]: boolean }>({});
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 space-y-8 min-h-screen">
@@ -47,7 +47,7 @@ export default function ClientShop({ initialProducts, category }: ClientShopProp
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    key={`shop-item-${prod.id}`}
+                    key={`shop-item-₹{prod.id}`}
                     className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group relative p-3"
                   >
                     <Link href={`/shop/${safeSlug}`} prefetch={false} className="block relative w-full aspect-square bg-white rounded-lg overflow-hidden mb-3">
@@ -63,11 +63,11 @@ export default function ClientShop({ initialProducts, category }: ClientShopProp
                          <div className="flex items-center justify-center gap-2 mb-3">
                             {originalPrice !== currentPrice && (
                                 <span className="text-[10px] md:text-xs text-gray-400 line-through">
-                                  ${Number(originalPrice).toLocaleString()}
+                                  ₹{Number(originalPrice).toLocaleString()}
                                 </span>
                             )}
                             <span className="text-sm md:text-base font-bold text-[#8e24aa]">
-                              ${Number(currentPrice).toLocaleString()}
+                              ₹{Number(currentPrice).toLocaleString()}
                             </span>
                          </div>
                         
@@ -76,10 +76,25 @@ export default function ClientShop({ initialProducts, category }: ClientShopProp
                               e.preventDefault();
                               e.stopPropagation();
                               addItem({ id: prod.id, name: prod.name, slug: rawSlug, price: currentPrice, quantity: 1, image: imgUrl });
+                              
+                              setAddedItems((prev) => ({ ...prev, [prod.id]: true }));
+                              setTimeout(() => setAddedItems((prev) => ({ ...prev, [prod.id]: false })), 3000);
                           }}
-                          className="w-full py-2 bg-gray-900 text-white text-[10px] md:text-xs font-bold rounded flex justify-center items-center gap-2 hover:bg-[#d81b60] transition-colors uppercase tracking-wider shadow-sm"
+                          className={`w-full py-2 text-[10px] md:text-xs font-bold rounded flex justify-center items-center gap-2 transition-colors uppercase tracking-wider shadow-sm ₹{
+                            addedItems[prod.id] 
+                              ? "bg-green-600 text-white hover:bg-green-700" 
+                              : "bg-gray-900 text-white hover:bg-[#d81b60]"
+                          }`}
                         >
-                          <ShoppingCart className="w-3.5 h-3.5" /> Add To Cart
+                          {addedItems[prod.id] ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" /> Added! Add More
+                            </>
+                          ) : (
+                            <>
+                              <ShoppingCart className="w-3.5 h-3.5" /> Add To Cart
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>

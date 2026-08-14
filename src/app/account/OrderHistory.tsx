@@ -182,7 +182,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
               <button
                 key={tab.id}
                 onClick={() => handleFilterChange(tab.id)}
-                className={`flex-shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                className={`flex-shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ₹{
                   isActive 
                     ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5" 
                     : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
@@ -197,7 +197,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
 
       {/* TOAST MESSAGE */}
       {message.text && (
-        <div className={`p-4 text-sm rounded-xl font-medium flex items-center gap-3 shadow-sm border ${message.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
+        <div className={`p-4 text-sm rounded-xl font-medium flex items-center gap-3 shadow-sm border ₹{message.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
           {message.type === "success" ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" /> : <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />}
           {message.text}
         </div>
@@ -211,7 +211,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">No Orders Found</h3>
           <p className="text-sm text-gray-500 max-w-sm">
-            {orderFilter === "all" ? "You haven't placed any orders yet. Once you do, they will appear here." : `You have no ${orderFilter} orders matching your criteria.`}
+            {orderFilter === "all" ? "You haven't placed any orders yet. Once you do, they will appear here." : `You have no ₹{orderFilter} orders matching your criteria.`}
           </p>
         </div>
       ) : (
@@ -229,7 +229,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                 <div className="bg-gray-50/50 px-5 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <span className="text-lg font-bold text-gray-900">Order #{order.number}</span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ring-1 ring-inset ${color}`}>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ring-1 ring-inset ₹{color}`}>
                       {text}
                     </span>
                   </div>
@@ -246,20 +246,20 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                   {progress > 0 && order.status.toLowerCase() !== 'on-hold' && (
                     <div className="relative max-w-2xl mx-auto py-4 mb-8 hidden sm:block">
                       <div className="absolute top-1/2 left-[10%] right-[10%] h-1 bg-gray-100 -translate-y-1/2 rounded-full"></div>
-                      <div className={`absolute top-1/2 left-[10%] h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out`} style={{ width: `${((progress - 1) / 2) * 80}%` }}></div>
+                      <div className={`absolute top-1/2 left-[10%] h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out`} style={{ width: `₹{((progress - 1) / 2) * 80}%` }}></div>
                       
                       <div className="relative flex justify-between z-10">
                         <div className="flex flex-col items-center w-1/3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${progress >= 1 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Receipt className="w-5 h-5" /></div>
-                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ${progress >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Placed</span>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ₹{progress >= 1 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Receipt className="w-5 h-5" /></div>
+                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ₹{progress >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Placed</span>
                         </div>
                         <div className="flex flex-col items-center w-1/3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${progress >= 2 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Truck className="w-5 h-5" /></div>
-                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ${progress >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>Processing</span>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ₹{progress >= 2 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Truck className="w-5 h-5" /></div>
+                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ₹{progress >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>Processing</span>
                         </div>
                         <div className="flex flex-col items-center w-1/3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${progress >= 3 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><CheckCircle2 className="w-5 h-5" /></div>
-                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ${progress >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>Delivered</span>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ₹{progress >= 3 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><CheckCircle2 className="w-5 h-5" /></div>
+                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ₹{progress >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>Delivered</span>
                         </div>
                       </div>
                     </div>
@@ -323,7 +323,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Shipping Address</h4>
                           <p className="text-sm text-gray-900 font-medium leading-relaxed">
                             {order.shipping.first_name} {order.shipping.last_name}<br />
-                            {order.shipping.address_1} {order.shipping.address_2 && `, ${order.shipping.address_2}`}<br />
+                            {order.shipping.address_1} {order.shipping.address_2 && `, ₹{order.shipping.address_2}`}<br />
                             {order.shipping.city}, {order.shipping.state} {order.shipping.postcode}<br />
                             {order.shipping.country}
                           </p>
@@ -415,7 +415,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 ring-1 ring-inset ${
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 ring-1 ring-inset ₹{
                           currentPage === page 
                             ? "z-10 bg-gray-900 text-white ring-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900" 
                             : "text-gray-900 ring-gray-300 hover:bg-gray-50"

@@ -9,7 +9,7 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim().replace(/\/$/, ""); 
+    const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim().replace(/\/₹/, ""); 
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
 
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim().replace(/\/$/, ""); 
+    const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim().replace(/\/₹/, ""); 
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
 

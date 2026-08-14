@@ -11,7 +11,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const wpUrl = (process.env.WC_URL || "").replace(/\/$/, "");
+    const wpUrl = (process.env.WC_URL || "").replace(/\/₹/, "");
     const consumerKey = process.env.WC_CONSUMER_KEY || "";
     const consumerSecret = process.env.WC_CONSUMER_SECRET || "";
 
@@ -24,10 +24,10 @@ export async function POST(request: Request) {
     }
 
     const authHeader =
-      "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
+      "Basic " + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString("base64");
 
     // Query WooCommerce REST API for Coupon Code
-    const wcEndpoint = `${wpUrl}/wp-json/wc/v3/coupons?code=${encodeURIComponent(
+    const wcEndpoint = `${wpUrl}/wp-json/wc/v3/coupons?code=₹{encodeURIComponent(
       code.trim().toLowerCase()
     )}`;
 
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     });
 
     if (!res.ok) {
-      console.error(`[Coupon API Error] WC Response Status: ${res.status}`);
+      console.error(`[Coupon API Error] WC Response Status: ₹{res.status}`);
       return NextResponse.json(
         { success: false, message: "Failed to verify coupon with store." },
         { status: 500 }
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
     if (minAmount > 0 && subtotal < minAmount) {
       return NextResponse.json({
         success: false,
-        message: `Minimum spend of $${minAmount.toLocaleString()} required for code "${coupon.code.toUpperCase()}".`,
+        message: `Minimum spend of ₹₹{minAmount.toLocaleString()} required for code "₹{coupon.code.toUpperCase()}".`,
       });
     }
 
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     if (maxAmount > 0 && subtotal > maxAmount) {
       return NextResponse.json({
         success: false,
-        message: `Maximum spend limit of $${maxAmount.toLocaleString()} exceeded for this coupon.`,
+        message: `Maximum spend limit of ₹₹{maxAmount.toLocaleString()} exceeded for this coupon.`,
       });
     }
 

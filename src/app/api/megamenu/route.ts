@@ -5,17 +5,17 @@ export async function GET() {
     const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
-    const baseUrl = wpUrl?.replace(/\/$/, "");
+    const baseUrl = wpUrl?.replace(/\/$/, ""); // Fixed: properly strip trailing slash
 
     const headers = {
       Authorization:
-        "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64"),
+        "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64"), // Fixed interpolation
       "Content-Type": "application/json",
     };
 
     // 1. Fetch Categories
     const categoriesRes = await fetch(
-      `${baseUrl}/wp-json/wc/v3/products/categories?per_page=100&hide_empty=false`,
+      `${baseUrl}/wp-json/wc/v3/products/categories?per_page=100&hide_empty=false`, // Fixed interpolation
       { headers, next: { revalidate: 3600 } }
     );
     const rawCategories = await categoriesRes.json();
@@ -23,7 +23,7 @@ export async function GET() {
     // 2. Fetch Perfect Brands (With Fallback)
     let rawBrands: any[] = [];
     try {
-      let bRes = await fetch(`${baseUrl}/wp-json/wp/v2/pwb-brand?per_page=100`, {
+      let bRes = await fetch(`${baseUrl}/wp-json/wp/v2/pwb-brand?per_page=100`, { // Fixed interpolation
         headers,
         next: { revalidate: 3600 },
       });
@@ -34,7 +34,7 @@ export async function GET() {
 
       // Fallback if pwb-brand is empty
       if (!Array.isArray(rawBrands) || rawBrands.length === 0) {
-        bRes = await fetch(`${baseUrl}/wp-json/wc/v3/products/brands?per_page=100`, {
+        bRes = await fetch(`${baseUrl}/wp-json/wc/v3/products/brands?per_page=100`, { // Fixed interpolation
           headers,
           next: { revalidate: 3600 },
         });

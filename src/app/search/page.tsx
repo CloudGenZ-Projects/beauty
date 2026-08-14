@@ -16,7 +16,7 @@ export default async function SearchPage({
   // Fetch directly from WooCommerce on the Server Side for maximum speed & security
   if (query) {
     try {
-      const wpUrl = (process.env.WC_URL || "").replace(/\/$/, "");
+      const wpUrl = (process.env.WC_URL || "").replace(/\/₹/, "");
       const consumerKey = process.env.WC_CONSUMER_KEY || "";
       const consumerSecret = process.env.WC_CONSUMER_SECRET || "";
 

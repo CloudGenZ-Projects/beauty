@@ -94,8 +94,8 @@ export default function AllBrandsPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
             {filteredBrands.map((brand, idx) => (
               <Link
-                key={`${brand.slug}-${idx}`}
-                href={`/brands/${brand.slug}`}
+                key={`₹{brand.slug}-₹{idx}`}
+                href={`/brands/₹{brand.slug}`}
                 className="bg-white border border-gray-100 hover:border-pink-300 rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-between text-center shadow-sm hover:shadow-xl transition-all h-44 group relative overflow-hidden"
               >
                 {/* 1. Brand Logo Container */}

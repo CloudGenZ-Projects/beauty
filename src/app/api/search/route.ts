@@ -9,7 +9,7 @@ export async function GET(request: Request) {
       return NextResponse.json([]);
     }
 
-    const wpUrl = (process.env.WC_URL || "").replace(/\/$/, "");
+    const wpUrl = (process.env.WC_URL || "").replace(/\/₹/, "");
     const consumerKey = process.env.WC_CONSUMER_KEY || "";
     const consumerSecret = process.env.WC_CONSUMER_SECRET || "";
 
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
     });
 
     if (!res.ok) {
-      console.error(`[Search API Error] WooCommerce status code: ${res.status}`);
+      console.error(`[Search API Error] WooCommerce status code: ₹{res.status}`);
       return NextResponse.json([]);
     }
 

@@ -151,7 +151,7 @@ export default function Navbar() {
     setIsLoading(true);
     const debounceTimer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        const res = await fetch(`/api/search?q=₹{encodeURIComponent(searchQuery.trim())}`);
         if (res.ok) {
           const data = await res.json();
           setSuggestions(data);
@@ -172,7 +172,7 @@ export default function Navbar() {
     const queryToUse = customQuery !== undefined ? customQuery : searchQuery;
 
     if (queryToUse.trim()) {
-      router.push(`/search?q=${encodeURIComponent(queryToUse.trim())}`);
+      router.push(`/search?q=₹{encodeURIComponent(queryToUse.trim())}`);
       setIsSearchFocused(false);
       setIsMobileSearchExpanded(false);
     }
@@ -188,7 +188,7 @@ export default function Navbar() {
     name: catName.toUpperCase(),
     hasMegaMenu: true,
     id: catName,
-    href: `/shop?category=${encodeURIComponent(catName.toLowerCase())}`,
+    href: `/shop?category=₹{encodeURIComponent(catName.toLowerCase())}`,
   }));
 
   const DESKTOP_NAV_ITEMS = [
@@ -317,7 +317,7 @@ export default function Navbar() {
                             {suggestions.map((item) => (
                               <Link
                                 key={item.id}
-                                href={`/shop/${item.slug}`}
+                                href={`/shop/₹{item.slug}`}
                                 onClick={() => setIsSearchFocused(false)}
                                 className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-pink-50/60 transition-all group border border-transparent hover:border-pink-100/80"
                               >
@@ -349,11 +349,11 @@ export default function Navbar() {
 
                                   <div className="flex items-center gap-2 mt-1">
                                     <span className="text-xs lg:text-sm font-black text-gray-900">
-                                      ${Number(item.price).toLocaleString()}
+                                      ₹{Number(item.price).toLocaleString()}
                                     </span>
                                     {item.on_sale && Number(item.regular_price) > Number(item.price) && (
                                       <span className="text-[11px] text-gray-400 line-through">
-                                        ${Number(item.regular_price).toLocaleString()}
+                                        ₹{Number(item.regular_price).toLocaleString()}
                                       </span>
                                     )}
                                   </div>
@@ -532,7 +532,7 @@ export default function Navbar() {
                         {suggestions.map((item) => (
                           <Link
                             key={item.id}
-                            href={`/shop/${item.slug}`}
+                            href={`/shop/₹{item.slug}`}
                             onClick={() => {
                               setIsMobileSearchExpanded(false);
                             }}
@@ -566,11 +566,11 @@ export default function Navbar() {
 
                               <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-xs font-black text-gray-900">
-                                  ${Number(item.price).toLocaleString()}
+                                  ₹{Number(item.price).toLocaleString()}
                                 </span>
                                 {item.on_sale && Number(item.regular_price) > Number(item.price) && (
                                   <span className="text-[10px] text-gray-400 line-through">
-                                    ${Number(item.regular_price).toLocaleString()}
+                                    ₹{Number(item.regular_price).toLocaleString()}
                                   </span>
                                 )}
                               </div>
@@ -631,7 +631,7 @@ export default function Navbar() {
             >
               <Link
                 href={item.href}
-                className={`text-[11px] lg:text-xs font-bold tracking-widest uppercase transition-colors relative group h-full flex items-center ${
+                className={`text-[11px] lg:text-xs font-bold tracking-widest uppercase transition-colors relative group h-full flex items-center ₹{
                   activeMegaMenu === item.id ? "text-[#d81b60]" : "text-gray-700 hover:text-[#d81b60]"
                 }`}
               >
@@ -746,7 +746,7 @@ export default function Navbar() {
                           >
                             <span>{catKey}</span>
                             <ChevronDown
-                              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
+                              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ₹{
                                 isExpanded ? "rotate-180 text-[#d81b60]" : ""
                               }`}
                             />
@@ -756,7 +756,7 @@ export default function Navbar() {
                           {isExpanded && (
                             <div className="p-3 bg-white border-t border-gray-100 space-y-3">
                               <Link
-                                href={`/shop?category=${encodeURIComponent(catKey.toLowerCase())}`}
+                                href={`/shop?category=₹{encodeURIComponent(catKey.toLowerCase())}`}
                                 onClick={() => setIsMobileDrawerOpen(false)}
                                 className="inline-block text-xs font-bold text-[#d81b60] hover:underline"
                               >
@@ -772,7 +772,7 @@ export default function Navbar() {
                                     {group.links.map((subLink, lIdx) => (
                                       <Link
                                         key={lIdx}
-                                        href={`/shop?category=${encodeURIComponent(subLink.toLowerCase())}`}
+                                        href={`/shop?category=₹{encodeURIComponent(subLink.toLowerCase())}`}
                                         onClick={() => setIsMobileDrawerOpen(false)}
                                         className="text-xs text-gray-600 hover:text-[#d81b60] py-1"
                                       >
@@ -799,7 +799,7 @@ export default function Navbar() {
                   <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-100 rounded-lg mb-2">
                     <button
                       onClick={() => setMobileBrandTab("popular")}
-                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ${
+                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ₹{
                         mobileBrandTab === "popular" ? "bg-white text-[#d81b60] shadow-sm" : "text-gray-600"
                       }`}
                     >
@@ -807,7 +807,7 @@ export default function Navbar() {
                     </button>
                     <button
                       onClick={() => setMobileBrandTab("luxe")}
-                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ${
+                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ₹{
                         mobileBrandTab === "luxe" ? "bg-white text-[#d81b60] shadow-sm" : "text-gray-600"
                       }`}
                     >
@@ -828,7 +828,7 @@ export default function Navbar() {
                       return (
                         <Link
                           key={bIdx}
-                          href={`/brands/${slug}`}
+                          href={`/brands/₹{slug}`}
                           onClick={() => setIsMobileDrawerOpen(false)}
                           className="p-2 border border-gray-100 rounded-lg text-center text-xs font-semibold text-gray-700 bg-white hover:border-pink-200"
                         >

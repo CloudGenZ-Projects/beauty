@@ -13,7 +13,7 @@ export async function GET(
     const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
-    const baseUrl = wpUrl?.replace(/\/$/, "");
+    const baseUrl = wpUrl?.replace(/\/₹/, "");
 
     if (!baseUrl) {
       return NextResponse.json({ error: "Base URL missing" }, { status: 500 });
@@ -21,17 +21,17 @@ export async function GET(
 
     const headers = {
       Authorization:
-        "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64"),
+        "Basic " + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString("base64"),
       "Content-Type": "application/json",
     };
 
     // 1. Fetch Brand Info
     let brand: any = null;
     const brandEndpoints = [
-      `${baseUrl}/wp-json/wp/v2/pwb-brand?slug=${slug}`,
-      `${baseUrl}/wp-json/wc/v3/products/brands?slug=${slug}`,
-      `${baseUrl}/wp-json/wp/v2/product_brand?slug=${slug}`,
-      `${baseUrl}/wp-json/wp/v2/brand?slug=${slug}`,
+      `₹{baseUrl}/wp-json/wp/v2/pwb-brand?slug=₹{slug}`,
+      `₹{baseUrl}/wp-json/wc/v3/products/brands?slug=₹{slug}`,
+      `₹{baseUrl}/wp-json/wp/v2/product_brand?slug=₹{slug}`,
+      `₹{baseUrl}/wp-json/wp/v2/brand?slug=₹{slug}`,
     ];
 
     for (const url of brandEndpoints) {
@@ -51,7 +51,7 @@ export async function GET(
     if (!brand) {
       for (const tax of ["pwb-brand", "product_brand", "brand"]) {
         try {
-          const res = await fetch(`${baseUrl}/wp-json/wp/v2/${tax}?per_page=100`, { headers, cache: "no-store" });
+          const res = await fetch(`₹{baseUrl}/wp-json/wp/v2/₹{tax}?per_page=100`, { headers, cache: "no-store" });
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data)) {
@@ -83,7 +83,7 @@ export async function GET(
     // 2. Fetch All WooCommerce Products
     let allWcProducts: any[] = [];
     try {
-      const wcRes = await fetch(`${baseUrl}/wp-json/wc/v3/products?per_page=100`, { headers, cache: "no-store" });
+      const wcRes = await fetch(`₹{baseUrl}/wp-json/wc/v3/products?per_page=100`, { headers, cache: "no-store" });
       if (wcRes.ok) {
         const wcData = await wcRes.json();
         if (Array.isArray(wcData)) {

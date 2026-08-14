@@ -62,7 +62,34 @@ export default function HomePageClient({
 }: HomePageClientProps) {
 
   const products = Array.isArray(initialProducts) ? initialProducts : [];
-  const categories = Array.isArray(initialCategories) ? initialCategories : [];
+  
+  // 🚀 ADVANCED FILTER LOGIC: Handles ACF, Meta_data, and Description (#hide)
+  const categories = (Array.isArray(initialCategories) ? initialCategories : []).filter(
+    (cat: any) => {
+      // 1. Hide "uncategorized"
+      if (cat?.slug?.toLowerCase() === "uncategorized") return false;
+
+      // 2. Hide if Category Description contains "#hide"
+      if (cat?.description && typeof cat.description === 'string' && cat.description.toLowerCase().includes('#hide')) {
+        return false;
+      }
+
+      // 3. Hide if ACF toggle is true
+      if (cat?.acf?.hide_category === true || cat?.acf?.hide_category === "true" || cat?.acf?.hide_category === "1" || cat?.acf?.hide_category === 1) {
+        return false;
+      }
+
+      // 4. Hide if WooCommerce Meta Data toggle is true
+      if (Array.isArray(cat?.meta_data)) {
+        const hideMeta = cat.meta_data.find((meta: any) => meta.key === "hide_category");
+        if (hideMeta && (hideMeta.value === true || hideMeta.value === "true" || hideMeta.value === "1" || hideMeta.value === 1)) {
+          return false;
+        }
+      }
+
+      return true; // Dikhana hai
+    }
+  );
   
   const heroSlidesData: HeroSlide[] = Array.isArray(initialHeroSlides) 
     ? initialHeroSlides 
@@ -79,6 +106,11 @@ export default function HomePageClient({
   const [currentSlide, setCurrentSlide] = useState(0);
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
+
+  // Console log to debug Data
+  useEffect(() => {
+    console.log("Filtered Categories sent to Frontend Grid:", categories.map(c => c.name));
+  }, [categories]);
 
   useEffect(() => {
     if (heroSlidesData.length <= 1) return;
@@ -153,9 +185,9 @@ export default function HomePageClient({
                       <div className="mt-auto flex flex-col gap-2 sm:gap-3">
                          <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
                             {originalPrice !== currentPrice && (
-                              <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 line-through font-medium">${Number(originalPrice).toLocaleString()}</span>
+                              <span className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 line-through font-medium">₹{Number(originalPrice).toLocaleString()}</span>
                             )}
-                            <span className="text-xs sm:text-sm md:text-lg font-black text-[#b456c8]">${Number(currentPrice).toLocaleString()}</span>
+                            <span className="text-xs sm:text-sm md:text-lg font-black text-[#b456c8]">₹{Number(currentPrice).toLocaleString()}</span>
                          </div>
                          <button
                            onClick={(e) => {
@@ -286,14 +318,14 @@ export default function HomePageClient({
                   <Link href={linkHref} prefetch={false} key={rawDeal.id || idx} className="flex flex-col items-center gap-1.5 sm:gap-2 cursor-pointer group snap-start">
                     <div className="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-white shadow-md flex items-center justify-center p-1 transition-transform group-hover:scale-105">
                       {deal.type === "under" ? (
-                        <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-[#d32f2f] text-white shadow-inner' : `border-[3px] sm:border-[4px] ${deal.color} bg-white`}`}>
+                        <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-[#d32f2f] text-white shadow-inner' : `border-[3px] sm:border-[4px] ${deal.color} bg-white `}`}>
                           <span className={`text-[7px] sm:text-[9px] md:text-[10px] font-bold uppercase ${deal.highlight ? 'text-white' : 'text-gray-500'}`}>{deal.highlight ? 'All Under' : 'Under'}</span>
-                          <span className={`text-sm sm:text-lg md:text-xl font-black leading-none ${deal.highlight ? 'text-white' : 'text-[#000]'}`}><span className="text-[10px] sm:text-xs">$</span>{deal.price}</span>
+                          <span className={`text-sm sm:text-lg md:text-xl font-black leading-none ${deal.highlight ? 'text-white' : 'text-[#000]'}`}><span className="text-[10px] sm:text-xs">₹</span>{deal.price}</span>
                         </div>
                       ) : deal.type === "flat" ? (
                           <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-gradient-to-br from-purple-600 to-indigo-800 text-white shadow-inner' : `border-[3px] sm:border-[4px] ${deal.color} bg-white`}`}>
                           <span className="text-[8px] sm:text-[9px] md:text-[11px] font-bold uppercase">FLAT</span>
-                          <span className="text-sm sm:text-lg md:text-xl font-black leading-none"><span className="text-[10px] sm:text-xs">$</span>{deal.price}</span>
+                          <span className="text-sm sm:text-lg md:text-xl font-black leading-none"><span className="text-[10px] sm:text-xs">₹</span>{deal.price}</span>
                           </div>
                       ) : (
                           <div className="w-full h-full rounded-full bg-gradient-to-br from-red-600 to-red-800 text-white flex flex-col items-center justify-center shadow-inner font-black text-sm sm:text-xl md:text-3xl leading-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
@@ -424,9 +456,9 @@ export default function HomePageClient({
                                    <Link href={`/shop/${safeSlug}`} prefetch={false}><h4 className="text-[10px] sm:text-[11px] md:text-sm font-semibold text-gray-800 line-clamp-2 mb-2 group-hover:text-[#d81b60] transition-colors leading-tight">{prod.name}</h4></Link>
                                    <div className={`mt-auto ${style.bg} text-white py-1.5 sm:py-2 px-2 rounded flex items-center justify-center gap-1.5 sm:gap-2`}>
                                       {originalPrice !== currentPrice && (
-                                        <span className="text-[9px] sm:text-[10px] md:text-xs line-through opacity-70">${Number(originalPrice).toLocaleString()}</span>
+                                        <span className="text-[9px] sm:text-[10px] md:text-xs line-through opacity-70">₹{Number(originalPrice).toLocaleString()}</span>
                                       )}
-                                      <span className="text-[11px] sm:text-xs md:text-sm font-bold">${Number(currentPrice).toLocaleString()}</span>
+                                      <span className="text-[11px] sm:text-xs md:text-sm font-bold">₹{Number(currentPrice).toLocaleString()}</span>
                                    </div>
                                 </div>
                              </div>
@@ -502,7 +534,7 @@ export default function HomePageClient({
                                    <h4 className="text-[10px] sm:text-xs md:text-sm font-semibold text-gray-700 line-clamp-1 mb-1.5 sm:mb-2 group-hover:text-[#ff2a85]">{prod.name}</h4>
                                 </Link>
                                 <div className="flex items-center justify-between mt-auto">
-                                   <span className="text-xs sm:text-sm md:text-base font-extrabold text-gray-900">${Number(currentPrice).toLocaleString()}</span>
+                                   <span className="text-xs sm:text-sm md:text-base font-extrabold text-gray-900">₹{Number(currentPrice).toLocaleString()}</span>
                                    <button 
                                       onClick={(e) => { 
                                          e.preventDefault(); 
@@ -557,9 +589,9 @@ export default function HomePageClient({
                              <div className="mt-auto flex flex-col items-center gap-2.5 sm:gap-4">
                                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-wrap justify-center">
                                    {originalPrice !== currentPrice && (
-                                     <span className="text-[9px] sm:text-[10px] md:text-sm text-gray-400 line-through">${Number(originalPrice).toLocaleString()}</span>
+                                     <span className="text-[9px] sm:text-[10px] md:text-sm text-gray-400 line-through">₹{Number(originalPrice).toLocaleString()}</span>
                                    )}
-                                   <span className="text-xs sm:text-base md:text-2xl font-black text-gray-900">${Number(currentPrice).toLocaleString()}</span>
+                                   <span className="text-xs sm:text-base md:text-2xl font-black text-gray-900">₹{Number(currentPrice).toLocaleString()}</span>
                                 </div>
                                 <button onClick={(e) => { e.preventDefault(); addItem({ id: prod.id, name: prod.name, slug: safeSlug, price: currentPrice, quantity: 1, image: imgUrl }); }} className="w-full bg-transparent border sm:border-2 border-black text-black py-1.5 sm:py-2 md:py-3 text-[9px] sm:text-[10px] md:text-sm font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors flex items-center justify-center gap-2">
                                    Add to Bag

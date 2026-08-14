@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -144,7 +142,7 @@ export default function DynamicOffersPage() {
     setAddedItems((prev) => ({ ...prev, [product.id]: true }));
     setTimeout(() => {
       setAddedItems((prev) => ({ ...prev, [product.id]: false }));
-    }, 1800);
+    }, 3000);
   };
 
   // Dynamic Discount Tier Filter
@@ -198,8 +196,8 @@ export default function DynamicOffersPage() {
               {coupons.map((coupon) => {
                 const isPercent = coupon.discount_type === "percent";
                 const discountTitle = isPercent
-                  ? `${coupon.amount}% OFF`
-                  : `FLAT $${coupon.amount} OFF`;
+                  ? `₹{coupon.amount}% OFF`
+                  : `FLAT ₹₹{coupon.amount} OFF`;
 
                 return (
                   <div
@@ -211,7 +209,7 @@ export default function DynamicOffersPage() {
                       <div className="flex justify-between items-start mb-2 gap-2 flex-wrap">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-pink-400">
                           {Number(coupon.minimum_amount) > 0
-                            ? `Min. spend $${Number(coupon.minimum_amount).toLocaleString()}`
+                            ? `Min. spend ₹₹{Number(coupon.minimum_amount).toLocaleString()}`
                             : "No Min Spend"}
                         </span>
                         
@@ -225,7 +223,7 @@ export default function DynamicOffersPage() {
                         {discountTitle}
                       </h3>
                       <p className="text-xs text-gray-300 font-medium mb-6 line-clamp-2">
-                        {coupon.description || `Apply promo code ${coupon.code} at checkout to claim your discount.`}
+                        {coupon.description || `Apply promo code ₹{coupon.code} at checkout to claim your discount.`}
                       </p>
                     </div>
 
@@ -269,7 +267,7 @@ export default function DynamicOffersPage() {
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => setSelectedFilter("all")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ₹{
                 selectedFilter === "all"
                   ? "bg-[#d81b60] text-white shadow-sm"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -279,7 +277,7 @@ export default function DynamicOffersPage() {
             </button>
             <button
               onClick={() => setSelectedFilter("50-plus")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ₹{
                 selectedFilter === "50-plus"
                   ? "bg-[#d81b60] text-white shadow-sm"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -289,7 +287,7 @@ export default function DynamicOffersPage() {
             </button>
             <button
               onClick={() => setSelectedFilter("30-plus")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ₹{
                 selectedFilter === "30-plus"
                   ? "bg-[#d81b60] text-white shadow-sm"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -299,13 +297,13 @@ export default function DynamicOffersPage() {
             </button>
             <button
               onClick={() => setSelectedFilter("under-999")}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ₹{
                 selectedFilter === "under-999"
                   ? "bg-[#d81b60] text-white shadow-sm"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              Under $999
+              Under ₹999
             </button>
           </div>
         </div>
@@ -348,14 +346,14 @@ export default function DynamicOffersPage() {
                     className="absolute top-5 right-5 z-10 p-2 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-gray-100 text-gray-400 hover:text-[#d81b60] transition-colors"
                   >
                     <Heart
-                      className={`w-4 h-4 ${
+                      className={`w-4 h-4 ₹{
                         isInWishlist(product.id) ? "fill-[#d81b60] text-[#d81b60]" : ""
                       }`}
                     />
                   </button>
 
                   {/* Product Image Link */}
-                  <Link href={`/shop/${product.slug}`} className="block mb-3">
+                  <Link href={`/shop/₹{product.slug}`} className="block mb-3">
                     <div className="aspect-square bg-gray-50 rounded-xl overflow-hidden p-3 flex items-center justify-center relative">
                       <img
                         src={product.images[0]?.src || "/placeholder.png"}
@@ -371,7 +369,7 @@ export default function DynamicOffersPage() {
                       {product.categories?.[0]?.name || "On Sale"}
                     </span>
 
-                    <Link href={`/shop/${product.slug}`}>
+                    <Link href={`/shop/₹{product.slug}`}>
                       <h3 className="text-xs sm:text-sm font-bold text-gray-800 line-clamp-2 group-hover:text-[#d81b60] transition-colors mb-2 min-h-[36px]">
                         {product.name}
                       </h3>
@@ -380,11 +378,11 @@ export default function DynamicOffersPage() {
                     {/* Price & Savings */}
                     <div className="flex items-center gap-2 mt-auto mb-3">
                       <span className="text-sm sm:text-base font-black text-gray-900">
-                        ${salePrice.toLocaleString()}
+                        ₹{salePrice.toLocaleString()}
                       </span>
                       {regPrice > salePrice && (
                         <span className="text-xs text-gray-400 line-through font-semibold">
-                          ${regPrice.toLocaleString()}
+                          ₹{regPrice.toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -392,15 +390,15 @@ export default function DynamicOffersPage() {
                     {/* Add To Cart Action */}
                     <button
                       onClick={(e) => handleAddToCart(e, product)}
-                      className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                      className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm ₹{
                         addedItems[product.id]
-                          ? "bg-green-600 text-white"
+                          ? "bg-green-600 text-white hover:bg-green-700"
                           : "bg-gray-900 hover:bg-[#d81b60] text-white"
                       }`}
                     >
                       {addedItems[product.id] ? (
                         <>
-                          <Check className="w-3.5 h-3.5" /> Added to Cart
+                          <Check className="w-3.5 h-3.5" /> Added! Add More
                         </>
                       ) : (
                         <>

@@ -30,7 +30,7 @@ export default function RootLayout({
               
               {/* Top Announcement Bar */}
               <div className="bg-[#cc4b37] text-white text-xs sm:text-sm py-2 px-4 text-center overflow-hidden whitespace-nowrap">
-                 Enjoy Free Shipping + Express Delivery on all orders above $4999 ★ Enjoy Free Shipping + Express Delivery on all orders above $4999
+                 Enjoy Free Shipping + Express Delivery on all orders above ₹4999 ★ Enjoy Free Shipping + Express Delivery on all orders above ₹4999
               </div>
 
               <Navbar />

@@ -29,16 +29,16 @@ export default async function ProductDetailPageSSR({
 
     // 2. Fetch Reviews DIRECTLY from WooCommerce (Bypassing localhost HTTP)
     try {
-      const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim().replace(/\/$/, ""); 
+      const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim().replace(/\/₹/, ""); 
       const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
       const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
 
       if (wpUrl && consumerKey && consumerSecret) {
         const revRes = await fetch(
-          `${wpUrl}/wp-json/wc/v3/products/reviews?product=${product.id}&per_page=100`, 
+          `${wpUrl}/wp-json/wc/v3/products/reviews?product=₹{product.id}&per_page=100`, 
           {
             headers: { 
-              'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64') 
+              'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64') 
             },
             cache: "no-store"
           }

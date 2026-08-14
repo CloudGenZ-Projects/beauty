@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     event = stripe.webhooks.constructEvent(body, sig!, endpointSecret);
   } catch (err: any) {
     console.error("Webhook Error:", err.message);
-    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
+    return NextResponse.json({ error: `Webhook Error: ₹{err.message}` }, { status: 400 });
   }
 
   // Handle successful payment
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
           set_paid: true,
           transaction_id: session.payment_intent as string
         });
-        console.log(`Order ${wooOrderId} updated to processing.`);
+        console.log(`Order ₹{wooOrderId} updated to processing.`);
       } catch (error) {
         console.error("Failed to update WooCommerce Order:", error);
       }

@@ -55,7 +55,7 @@ function AuthForm() {
 
         // Save to cookie (Expires in 7 days)
         const maxAge = 7 * 24 * 60 * 60;
-        document.cookie = `user_session=${encodeURIComponent(JSON.stringify(data.user))}; path=/; max-age=${maxAge}; SameSite=Lax`;
+        document.cookie = `user_session=₹{encodeURIComponent(JSON.stringify(data.user))}; path=/; max-age=₹{maxAge}; SameSite=Lax`;
 
         // REDIRECT TO THE CORRECT URL (Checkout or Account)
         router.push(redirectUrl);
@@ -73,14 +73,14 @@ function AuthForm() {
         <button
           type="button"
           onClick={() => { setActiveTab("login"); setErrorMsg(""); setSuccessMsg(""); }}
-          className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-colors ${activeTab === "login" ? "bg-white text-[#d81b60] border-t-2 border-[#d81b60]" : "text-gray-500 hover:text-gray-800"}`}
+          className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-colors ₹{activeTab === "login" ? "bg-white text-[#d81b60] border-t-2 border-[#d81b60]" : "text-gray-500 hover:text-gray-800"}`}
         >
           Sign In
         </button>
         <button
           type="button"
           onClick={() => { setActiveTab("register"); setErrorMsg(""); setSuccessMsg(""); }}
-          className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-colors ${activeTab === "register" ? "bg-white text-[#d81b60] border-t-2 border-[#d81b60]" : "text-gray-500 hover:text-gray-800"}`}
+          className={`flex-1 py-4 text-sm font-bold uppercase tracking-wide transition-colors ₹{activeTab === "register" ? "bg-white text-[#d81b60] border-t-2 border-[#d81b60]" : "text-gray-500 hover:text-gray-800"}`}
         >
           Register
         </button>

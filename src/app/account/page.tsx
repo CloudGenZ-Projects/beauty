@@ -25,11 +25,11 @@ export default async function AccountPageSSR() {
 
   try {
     // 2. Setup WooCommerce Credentials for direct server-to-server fetch
-    const wpUrl = (process.env.WC_URL || "").replace(/\/$/, "");
+    const wpUrl = (process.env.WC_URL || "").replace(/\/₹/, "");
     const consumerKey = process.env.WC_CONSUMER_KEY || "";
     const consumerSecret = process.env.WC_CONSUMER_SECRET || "";
 
-    const authHeader = 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
+    const authHeader = 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64');
     const headers = {
       'Authorization': authHeader,
       'Content-Type': 'application/json'
@@ -37,20 +37,20 @@ export default async function AccountPageSSR() {
 
     if (wpUrl && consumerKey) {
       // Fetch Profile directly from WooCommerce
-      const profileRes = await fetch(`${wpUrl}/wp-json/wc/v3/customers/${user.id}`, { headers, cache: 'no-store' });
+      const profileRes = await fetch(`${wpUrl}/wp-json/wc/v3/customers/₹{user.id}`, { headers, cache: 'no-store' });
       if (profileRes.ok) {
         profileData = await profileRes.json();
       }
 
       // Fetch Orders directly from WooCommerce
-      const ordersRes = await fetch(`${wpUrl}/wp-json/wc/v3/orders?customer=${user.id}`, { headers, cache: 'no-store' });
+      const ordersRes = await fetch(`${wpUrl}/wp-json/wc/v3/orders?customer=₹{user.id}`, { headers, cache: 'no-store' });
       
       if (ordersRes.ok) {
         let orders = await ordersRes.json();
 
         // If no orders found by User ID, search by Email (for guest checkouts)
         if (orders.length === 0 && user.email) {
-          const emailRes = await fetch(`${wpUrl}/wp-json/wc/v3/orders?search=${encodeURIComponent(user.email)}`, { headers, cache: 'no-store' });
+          const emailRes = await fetch(`${wpUrl}/wp-json/wc/v3/orders?search=₹{encodeURIComponent(user.email)}`, { headers, cache: 'no-store' });
           if (emailRes.ok) {
             orders = await emailRes.json();
           }

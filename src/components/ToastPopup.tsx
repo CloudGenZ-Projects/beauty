@@ -12,7 +12,7 @@ interface ToastPopupProps {
 export default function ToastPopup({ show, message, type, onClose }: ToastPopupProps) {
   return (
     <div 
-      className={`fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl bg-white border border-gray-100 transition-all duration-300 ${
+      className={`fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl bg-white border border-gray-100 transition-all duration-300 ₹{
         show ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
       }`}
     >

@@ -18,14 +18,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    const baseUrl = wpUrl.replace(/\/$/, "");
+    const baseUrl = wpUrl.replace(/\/₹/, "");
 
     // 2. Fetch the user from WooCommerce by their email
-    const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/customers?email=${email}`, {
+    const wpResponse = await fetch(`₹{baseUrl}/wp-json/wc/v3/customers?email=₹{email}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')
+        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64')
       }
     });
 

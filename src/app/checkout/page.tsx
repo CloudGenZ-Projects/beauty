@@ -30,7 +30,7 @@ export default function CheckoutPage() {
     city: "",
     state: "",
     postcode: "",
-    country: "US",
+    country: "US", // Default country
   });
 
   // Dynamic Shipping State
@@ -159,7 +159,7 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(data.error || "Checkout failed");
 
       if (data.url) {
-        window.location.href = data.url;
+        window.location.href = data.url; // Redirect to Stripe Checkout
       } else {
         throw new Error("Stripe checkout URL not returned.");
       }
@@ -277,6 +277,7 @@ export default function CheckoutPage() {
                   <option value="CA">Canada (CA)</option>
                   <option value="GB">United Kingdom (UK)</option>
                   <option value="AU">Australia (AU)</option>
+                  <option value="IN">India (IN)</option>
                 </select>
               </div>
             </form>
@@ -320,7 +321,7 @@ export default function CheckoutPage() {
                     {method.cost === 0 ? (
                       <span className="text-emerald-600 uppercase">FREE</span>
                     ) : (
-                      `$${method.cost.toFixed(2)}`
+                      `₹${method.cost.toFixed(2)}`
                     )}
                   </span>
                 </label>
@@ -367,7 +368,7 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                   <p className="text-sm font-black text-[#d81b60]">
-                    ${(Number(item.price) * item.quantity).toFixed(2)}
+                    ₹{(Number(item.price) * item.quantity).toFixed(2)}
                   </p>
                 </div>
               ))}
@@ -377,7 +378,7 @@ export default function CheckoutPage() {
             <div className="border-t border-gray-200 pt-4 space-y-2 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-semibold text-gray-900">${subtotal.toFixed(2)}</span>
+                <span className="font-semibold text-gray-900">₹{subtotal.toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between items-center">
@@ -388,7 +389,7 @@ export default function CheckoutPage() {
                   {shippingCost === 0 ? (
                     <span className="text-emerald-600 uppercase font-black">Free</span>
                   ) : (
-                    `$${shippingCost.toFixed(2)}`
+                    `₹${shippingCost.toFixed(2)}`
                   )}
                 </span>
               </div>
@@ -398,7 +399,7 @@ export default function CheckoutPage() {
             <div className="border-t border-gray-200 pt-4 mt-4">
               <div className="flex justify-between font-black text-2xl text-gray-900">
                 <span>Total</span>
-                <span>${grandTotal.toFixed(2)}</span>
+                <span>₹{grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -412,7 +413,7 @@ export default function CheckoutPage() {
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              `Pay $${grandTotal.toFixed(2)} with Stripe`
+              `Pay ₹${grandTotal.toFixed(2)} with Stripe`
             )}
           </button>
         </div>

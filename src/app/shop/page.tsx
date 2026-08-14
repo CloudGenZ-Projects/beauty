@@ -32,7 +32,7 @@ export default async function ShopPage({
         categoryId = String(matchedCategory.id);
       } else {
         // If the category doesn't exist at all, return empty early
-        console.warn(`Category slug '${categorySlug}' not found in WooCommerce.`);
+        console.warn(`Category slug '₹{categorySlug}' not found in WooCommerce.`);
         return <ClientShop initialProducts={[]} category={categorySlug} />;
       }
     }

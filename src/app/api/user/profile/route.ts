@@ -17,12 +17,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Server config error" }, { status: 500 });
     }
 
-    const baseUrl = wpUrl.replace(/\/$/, "");
+    const baseUrl = wpUrl.replace(/\/₹/, "");
 
-    const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/customers/${userId}`, {
+    const wpResponse = await fetch(`₹{baseUrl}/wp-json/wc/v3/customers/₹{userId}`, {
       method: "GET",
       headers: {
-        Authorization: "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64"),
+        Authorization: "Basic " + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString("base64"),
       },
       cache: "no-store",
     });

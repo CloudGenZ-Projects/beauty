@@ -17,6 +17,7 @@ export interface WooCategory {
     src: string;
     alt: string;
   } | null;
+  description?: string; // Yeh add kiya hai taaki description read ho sake
 }
 
 export interface WooProductImage {
@@ -70,7 +71,12 @@ async function wooFetch<T>(endpoint: string, options: RequestInit = {}): Promise
     throw new Error("Missing WooCommerce API credentials in .env.local");
   }
 
-  const url = `${WC_URL}/wp-json/wc/v3${endpoint}`;
+  // 🚀 ULTIMATE CACHE BUSTER: Yeh WordPress (LiteSpeed) ko hamesha naya data dene par majboor karega
+  const cacheBuster = `nocache=${Date.now()}`;
+  const separator = endpoint.includes("?") ? "&" : "?";
+  const finalEndpoint = `${endpoint}${separator}${cacheBuster}`;
+
+  const url = `${WC_URL}/wp-json/wc/v3${finalEndpoint}`;
   const authHeader = `Basic ${Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString("base64")}`;
 
   const res = await fetch(url, {
@@ -81,7 +87,8 @@ async function wooFetch<T>(endpoint: string, options: RequestInit = {}): Promise
       Authorization: authHeader,
       ...options.headers,
     },
-    next: { revalidate: 300 },
+    // 🚀 NEXT.JS CACHE FIX: Isko 'no-store' kiya taaki Next.js purana data kabhi save na kare
+    cache: "no-store", 
   });
 
   if (!res.ok) {
@@ -188,16 +195,12 @@ export async function searchProducts(query: string): Promise<WooProduct[]> {
 
 // ─── Categories API ──────────────────────────────────────────
 export async function fetchCategories(): Promise<WooCategory[]> {
-  const cacheKey = "categories:all";
-  const cached = getCached<WooCategory[]>(cacheKey, 10 * 60 * 1000);
-  if (cached) return cached;
-
+  // 🚀 Yahan se Memory Cache check hata diya hai. Ab yeh hamesha live data fetch karega.
   const data = await wooFetch<WooCategory[]>("/products/categories?per_page=100&hide_empty=true");
-  setCache(cacheKey, data);
   return data;
 }
 
-// Add this at the end of your lib/woocommerce.ts
+// ─── Orders API ──────────────────────────────────────────────
 export async function createWooOrder(orderData: any): Promise<any> {
   return wooFetch<any>("/orders", {
     method: "POST",
@@ -218,8 +221,6 @@ export async function refundWooOrder(orderId: number | string, amount: string): 
     body: JSON.stringify({ amount }),
   });
 }
-
-// Add this at the bottom of lib/woocommerce.ts
 
 // Function to add a note to an existing WooCommerce order (Useful for Returns)
 export async function addWooOrderNote(orderId: number | string, note: string, isCustomerNote: boolean = false): Promise<any> {

@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
-    const baseUrl = wpUrl?.replace(/\/$/, "");
+    const baseUrl = wpUrl?.replace(/\/₹/, "");
 
     if (!baseUrl || !consumerKey || !consumerSecret) {
       return NextResponse.json(
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
     const headers = {
       Authorization:
-        "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64"),
+        "Basic " + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString("base64"),
       "Content-Type": "application/json",
     };
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     );
 
     // Fetch Shipping Zones from WooCommerce
-    const zonesRes = await fetch(`${baseUrl}/wp-json/wc/v3/shipping/zones`, {
+    const zonesRes = await fetch(`₹{baseUrl}/wp-json/wc/v3/shipping/zones`, {
       headers,
     });
     const zones = await zonesRes.json();
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       for (const zone of zones) {
         // Fetch locations for each zone
         const locRes = await fetch(
-          `${baseUrl}/wp-json/wc/v3/shipping/zones/${zone.id}/locations`,
+          `₹{baseUrl}/wp-json/wc/v3/shipping/zones/₹{zone.id}/locations`,
           { headers }
         );
         const locations = await locRes.json();
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
         if (Array.isArray(locations)) {
           const isMatch = locations.some((loc: any) => {
             if (loc.type === "country" && loc.code === country) return true;
-            if (loc.type === "state" && loc.code === `${country}:${state}`) return true;
+            if (loc.type === "state" && loc.code === `₹{country}:₹{state}`) return true;
             if (loc.type === "postcode" && loc.code === postcode) return true;
             return false;
           });
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
 
     // Fetch Shipping Methods for the matched Zone
     const methodsRes = await fetch(
-      `${baseUrl}/wp-json/wc/v3/shipping/zones/${matchedZoneId}/methods`,
+      `₹{baseUrl}/wp-json/wc/v3/shipping/zones/₹{matchedZoneId}/methods`,
       { headers }
     );
     const methods = await methodsRes.json();

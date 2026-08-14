@@ -11,13 +11,13 @@ export async function POST(request: Request) {
     const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
-    const baseUrl = wpUrl?.replace(/\/$/, "");
+    const baseUrl = wpUrl?.replace(/\/₹/, "");
 
     // Add a note asking system to resend email (Many WC mailer plugins can hook into this)
-    const res = await fetch(`${baseUrl}/wp-json/wc/v3/orders/${orderId}/notes`, {
+    const res = await fetch(`₹{baseUrl}/wp-json/wc/v3/orders/₹{orderId}/notes`, {
       method: 'POST',
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64'),
+        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64'),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ 

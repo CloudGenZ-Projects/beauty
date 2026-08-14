@@ -42,6 +42,9 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
   const [activeTab, setActiveTab] = useState<"desc" | "specs" | "shipping" | "reviews">("desc");
   const [selectedAttributes, setSelectedAttributes] = useState<{ [key: string]: string }>({});
   const [copiedLink, setCopiedLink] = useState(false);
+  
+  // Added State for Button Confirmation UI
+  const [isAdded, setIsAdded] = useState(false);
 
   // Reviews States (Always guarantee an Array)
   const [reviews, setReviews] = useState<any[]>(safeInitialReviews);
@@ -99,8 +102,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
-  // Review Submission Logic (Guaranteed State Append)
-// Review Submission Logic
+  // Review Submission Logic
   const handleReviewSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -147,7 +149,11 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
         image: productImages[selectedImgIndex] || getProductImage(product),
         attributes: selectedAttributes
       }, quantity);
+      
       showPopup("Added to Cart successfully!", "success");
+      
+      setIsAdded(true);
+      setTimeout(() => setIsAdded(false), 3000);
     }
   };
 
@@ -185,7 +191,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           <Link href="/shop" className="hover:text-[#d81b60] transition-colors">Shop</Link><span>/</span>
           {product.categories?.[0] && (
             <>
-              <Link href={`/shop?category=${product.categories[0].slug}`} className="hover:text-[#d81b60] transition-colors">
+              <Link href={`/shop?category=₹{product.categories[0].slug}`} className="hover:text-[#d81b60] transition-colors">
                 {product.categories[0].name}
               </Link>
               <span>/</span>
@@ -215,7 +221,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                   className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur p-3 rounded-full shadow-md text-gray-400 hover:text-[#d81b60] transition-all hover:scale-110 active:scale-95"
                   title={isLiked ? "Remove from Wishlist" : "Add to Wishlist"}
                 >
-                  <Heart className={`w-5 h-5 ${isLiked ? "text-[#d81b60] fill-current" : ""}`} />
+                  <Heart className={`w-5 h-5 ₹{isLiked ? "text-[#d81b60] fill-current" : ""}`} />
                 </button>
 
                 {/* Main Selected Image */}
@@ -251,7 +257,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                     <button
                       key={idx}
                       onClick={() => setSelectedImgIndex(idx)}
-                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 bg-gray-50 p-1 flex-shrink-0 transition-all ${
+                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 bg-gray-50 p-1 flex-shrink-0 transition-all ₹{
                         selectedImgIndex === idx
                           ? "border-[#d81b60] ring-2 ring-pink-100 shadow-sm"
                           : "border-gray-200 hover:border-pink-300 opacity-70 hover:opacity-100"
@@ -274,7 +280,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
                 {/* Stock Indicator */}
                 <div className="flex items-center gap-1.5 text-xs font-bold">
-                  <span className={`w-2.5 h-2.5 rounded-full ${product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500 animate-pulse"}`} />
+                  <span className={`w-2.5 h-2.5 rounded-full ₹{product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500 animate-pulse"}`} />
                   <span className={product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}>
                     {product.stock_status === "outofstock" ? "Out of Stock" : "In Stock & Ready to Ship"}
                   </span>
@@ -310,15 +316,15 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
               {/* Price & Discount */}
               <div className="flex items-baseline gap-3 mb-6">
                 <span className="text-3xl sm:text-4xl font-black text-gray-900">
-                  ${Number(currentPrice).toLocaleString()}
+                  ₹{Number(currentPrice).toLocaleString()}
                 </span>
                 {hasDiscount && (
                   <>
                     <span className="text-lg text-gray-400 line-through font-semibold">
-                      ${Number(regPrice).toLocaleString()}
+                      ₹{Number(regPrice).toLocaleString()}
                     </span>
                     <span className="text-xs font-bold text-red-600 bg-red-50 px-2.5 py-1 rounded-md border border-red-100">
-                      Save ${(regPrice - salePrice).toLocaleString()}
+                      Save ₹{(regPrice - salePrice).toLocaleString()}
                     </span>
                   </>
                 )}
@@ -337,7 +343,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                           <button
                             key={option}
                             onClick={() => setSelectedAttributes((prev) => ({ ...prev, [attr.name]: option }))}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ₹{
                               selectedAttributes[attr.name] === option
                                 ? "bg-gray-900 text-white shadow-sm"
                                 : "bg-white border border-gray-200 text-gray-700 hover:border-pink-300"
@@ -369,9 +375,21 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                 <button 
                   onClick={handleAddToCart} 
                   disabled={product.stock_status === "outofstock"}
-                  className="w-full sm:flex-1 h-12 sm:h-14 flex items-center justify-center gap-2 rounded-2xl border-2 border-gray-900 text-gray-900 font-bold text-xs sm:text-sm uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full sm:flex-1 h-12 sm:h-14 flex items-center justify-center gap-2 rounded-2xl border-2 font-bold text-xs sm:text-sm uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ₹{
+                    isAdded 
+                      ? "border-green-600 bg-green-600 text-white hover:bg-green-700 hover:border-green-700" 
+                      : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
+                  }`}
                 >
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" /> Add To Cart
+                  {isAdded ? (
+                    <>
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5" /> Added! Add More
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" /> Add To Cart
+                    </>
+                  )}
                 </button>
                 
                 {/* Buy It Now */}
@@ -411,7 +429,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           <div className="flex border-b border-gray-200 mb-8 overflow-x-auto custom-scrollbar gap-8">
             <button
               onClick={() => setActiveTab("desc")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
                 activeTab === "desc" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -421,7 +439,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
             <button
               onClick={() => setActiveTab("specs")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
                 activeTab === "specs" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -431,7 +449,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
             <button
               onClick={() => setActiveTab("shipping")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
                 activeTab === "shipping" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -441,7 +459,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
             <button
               onClick={() => setActiveTab("reviews")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
                 activeTab === "reviews" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -508,8 +526,8 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                     <tr>
                       <td className="py-3.5 px-4 font-bold text-gray-600">Stock Status</td>
                       <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">
-                        <span className={`inline-flex items-center gap-1.5 font-bold ${product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}`}>
-                          <span className={`w-2 h-2 rounded-full ${product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500"}`} />
+                        <span className={`inline-flex items-center gap-1.5 font-bold ₹{product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}`}>
+                          <span className={`w-2 h-2 rounded-full ₹{product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500"}`} />
                           {product.stock_status === "outofstock" ? "Out of Stock" : "In Stock"}
                         </span>
                       </td>
@@ -554,7 +572,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                           </div>
                           <div className="flex bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">
                             {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`w-3.5 h-3.5 ${i < (Number(rev.rating) || 5) ? "text-amber-400 fill-current" : "text-gray-300"}`} />
+                              <Star key={i} className={`w-3.5 h-3.5 ₹{i < (Number(rev.rating) || 5) ? "text-amber-400 fill-current" : "text-gray-300"}`} />
                             ))}
                           </div>
                         </div>
@@ -581,7 +599,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                         <Star 
                           key={star} 
                           onClick={() => setReviewForm({ ...reviewForm, rating: star })} 
-                          className={`w-5 h-5 cursor-pointer hover:scale-110 transition-transform ${star <= reviewForm.rating ? "text-amber-400 fill-current" : "text-gray-200"}`} 
+                          className={`w-5 h-5 cursor-pointer hover:scale-110 transition-transform ₹{star <= reviewForm.rating ? "text-amber-400 fill-current" : "text-gray-200"}`} 
                         />
                       ))}
                     </div>

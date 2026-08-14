@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const baseUrl = wpUrl?.replace(/\/$/, "");
 
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
-    const stripeCurrency = (process.env.STRIPE_CURRENCY || "usd").toLowerCase();
+    const stripeCurrency = (process.env.STRIPE_CURRENCY || "inr").toLowerCase(); // Adjust currency as needed (inr, usd, etc.)
 
     if (!baseUrl || !consumerKey || !consumerSecret) {
       return NextResponse.json(
@@ -32,8 +32,7 @@ export async function POST(request: Request) {
     }
 
     const headers = {
-      Authorization:
-        "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64"),
+      Authorization: "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64"),
       "Content-Type": "application/json",
     };
 
@@ -52,7 +51,7 @@ export async function POST(request: Request) {
       },
     ];
 
-    // Default Country to USA if missing
+    // Default Country to US if missing (or change to IN if that's your primary base)
     if (billing && !billing.country) billing.country = "US";
     if (shipping && !shipping.country) shipping.country = "US";
 
@@ -166,7 +165,7 @@ export async function POST(request: Request) {
       });
     }
 
-    // Cash On Delivery (COD) Flow
+    // Fallback: Cash On Delivery (COD) Flow or Other Non-Stripe Methods
     const orderPayload = {
       payment_method: payment_method,
       payment_method_title: payment_method_title,

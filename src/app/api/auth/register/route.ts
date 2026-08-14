@@ -20,14 +20,14 @@ export async function POST(request: Request) {
     }
 
     // Remove the trailing slash from the URL if it exists
-    const baseUrl = wpUrl.replace(/\/$/, "");
+    const baseUrl = wpUrl.replace(/\/₹/, "");
 
     // 2. Call WordPress / WooCommerce REST API
-    const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/customers`, {
+    const wpResponse = await fetch(`₹{baseUrl}/wp-json/wc/v3/customers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')
+        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64')
       },
       body: JSON.stringify({
         email: email,

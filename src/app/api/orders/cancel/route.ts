@@ -11,13 +11,13 @@ export async function POST(request: Request) {
     const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
-    const baseUrl = wpUrl?.replace(/\/$/, "");
+    const baseUrl = wpUrl?.replace(/\/₹/, "");
 
     // Update status to 'cancelled'
-    const res = await fetch(`${baseUrl}/wp-json/wc/v3/orders/${orderId}`, {
+    const res = await fetch(`₹{baseUrl}/wp-json/wc/v3/orders/₹{orderId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64'),
+        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64'),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ status: "cancelled" })
