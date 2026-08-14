@@ -17,7 +17,7 @@ export interface WooCategory {
     src: string;
     alt: string;
   } | null;
-  description?: string; // Yeh add kiya hai taaki description read ho sake
+  description?: string;
 }
 
 export interface WooProductImage {
@@ -71,7 +71,7 @@ async function wooFetch<T>(endpoint: string, options: RequestInit = {}): Promise
     throw new Error("Missing WooCommerce API credentials in .env.local");
   }
 
-  // 🚀 ULTIMATE CACHE BUSTER: Yeh WordPress (LiteSpeed) ko hamesha naya data dene par majboor karega
+ 
   const cacheBuster = `nocache=${Date.now()}`;
   const separator = endpoint.includes("?") ? "&" : "?";
   const finalEndpoint = `${endpoint}${separator}${cacheBuster}`;
@@ -87,7 +87,7 @@ async function wooFetch<T>(endpoint: string, options: RequestInit = {}): Promise
       Authorization: authHeader,
       ...options.headers,
     },
-    // 🚀 NEXT.JS CACHE FIX: Isko 'no-store' kiya taaki Next.js purana data kabhi save na kare
+   
     cache: "no-store", 
   });
 
