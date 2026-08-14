@@ -40,7 +40,7 @@ export default function CartDrawer() {
             <div className="p-6 md:p-8 bg-white border-b border-[#E5E5E5] flex items-center justify-between">
               <div>
                 <span className="font-mono text-xs uppercase tracking-[0.25em] text-[#666666] font-semibold">
-                  VÉLOURS ATELIER PARIS
+                  GLOBE TRADING  PARIS
                 </span>
                 <h3 className="font-outfit text-2xl md:text-3xl uppercase tracking-tight font-extrabold text-[#111111] mt-1 flex items-center gap-2">
                   <ShoppingBag className="w-6 h-6" />

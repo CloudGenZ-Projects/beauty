@@ -3,7 +3,7 @@ import ClientWishlist from "./ClientWishlist";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "My Wishlist | VÉLOURS Atelier",
+  title: "My Wishlist | GLOBE TRADING ",
   description: "View and manage your saved luxury beauty items.",
 };
 

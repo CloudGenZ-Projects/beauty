@@ -275,7 +275,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
               {/* Category / Stock Badge */}
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-black text-[#8e24aa] uppercase tracking-widest bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
-                  {product.categories?.[0]?.name || "Luxury Atelier"}
+                  {product.categories?.[0]?.name || "Luxury "}
                 </span>
 
                 {/* Stock Indicator */}
@@ -542,7 +542,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           {activeTab === "shipping" && (
             <div className="space-y-4 text-xs sm:text-sm text-gray-600 leading-relaxed max-w-2xl">
               <p className="font-semibold text-gray-800">📦 Express Domestic Shipping (2-4 Business Days)</p>
-              <p>All orders are dispatched from our luxury atelier warehouse within 24 hours.</p>
+              <p>All orders are dispatched from our luxury  warehouse within 24 hours.</p>
             </div>
           )}
 

@@ -5,13 +5,13 @@ import React from "react";
 export default function MarqueeTicker() {
   const items = [
     "*",
-    "VÉLOURS ATELIER",
+    "GLOBE TRADING ",
     "NEW BIOTECH FORMULATIONS",
     "*",
     "50% VIP PRIVILEGE",
     "LIMITED GRASSE BATCH",
     "*",
-    "VÉLOURS ATELIER",
+    "GLOBE TRADING ",
     "PARIS • SEOUL LABORATORY",
     "*",
     "NEW IN",

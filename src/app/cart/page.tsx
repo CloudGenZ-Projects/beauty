@@ -3,7 +3,7 @@ import ClientCart from "./ClientCart";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Shopping Bag | VÉLOURS Atelier",
+  title: "Shopping Bag | GLOBE TRADING ",
   description: "Review your selected luxury beauty items and checkout securely.",
 };
 

@@ -11,7 +11,7 @@ import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
 
 export const metadata: Metadata = {
-  title: "VÉLOURS Atelier | Premium Beauty",
+  title: "GLOBE TRADING",
   description: "Your ultimate destination for premium beauty products and cosmetics.",
 };
 
@@ -37,17 +37,17 @@ export default function RootLayout({
               
               <main className="min-h-screen">{children}</main>
 
-              {/* VÉLOURS Atelier Footer */}
+              {/* GLOBE TRADING  Footer */}
               <footer className="bg-white pt-16 pb-8 border-t border-gray-200 mt-20">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col items-center space-y-8">
                   
                   {/* Logo Area */}
                   <Link href="/" className="flex flex-col items-center justify-center text-center group">
                      <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-[0.2em] uppercase leading-none group-hover:text-[#d81b60] transition-colors">
-                        VÉLOURS
+                        GLOBE TRADING
                      </h2>
                      <span className="text-xs text-gray-500 tracking-[0.3em] uppercase mt-2 font-medium">
-                        Atelier
+                        
                      </span>
                   </Link>
 
@@ -67,7 +67,7 @@ export default function RootLayout({
                   </div>
                   
                   <div className="text-xs text-gray-500 text-center">
-                    © 2024 <span className="text-[#8e24aa] font-bold tracking-widest uppercase">Vélours Atelier</span>. All Rights Reserved.
+                    © 2024 <span className="text-[#8e24aa] font-bold tracking-widest uppercase">GLOBE TRADING </span>. All Rights Reserved.
                   </div>
 
                   {/* Social Icons */}

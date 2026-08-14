@@ -231,10 +231,10 @@ export default function Navbar() {
 
             <Link href="/" className="flex flex-col group select-none">
               <h1 className="text-base sm:text-2xl md:text-3xl font-black text-gray-900 tracking-[0.1em] sm:tracking-[0.15em] uppercase leading-none group-hover:text-[#d81b60] transition-colors">
-                VÉLOURS
+                GLOBE TRADING
               </h1>
               <span className="text-[6.5px] sm:text-[9px] text-gray-400 tracking-[0.2em] sm:tracking-[0.3em] uppercase mt-0.5 font-semibold">
-                Atelier
+                
               </span>
             </Link>
           </div>
@@ -692,8 +692,8 @@ export default function Navbar() {
               {/* Drawer Top Branding */}
               <div className="bg-white border-b border-gray-100 flex items-center justify-between px-5 py-4 sticky top-0 z-10">
                 <div className="flex flex-col">
-                  <span className="font-black text-lg text-gray-900 tracking-widest uppercase">VÉLOURS</span>
-                  <span className="text-[8px] text-gray-400 tracking-[0.2em] uppercase">Atelier Catalog</span>
+                  <span className="font-black text-lg text-gray-900 tracking-widest uppercase">GLOBE TRADING</span>
+                  <span className="text-[8px] text-gray-400 tracking-[0.2em] uppercase"> Catalog</span>
                 </div>
                 <button
                   onClick={() => setIsMobileDrawerOpen(false)}

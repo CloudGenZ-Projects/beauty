@@ -44,7 +44,7 @@ function ThankYouContent() {
         </h1>
 
         <p className="text-xs sm:text-sm text-gray-500 font-medium mb-6">
-          Your order has been confirmed and is being processed by our luxury atelier team.
+          Your order has been confirmed and is being processed by our luxury  team.
         </p>
 
         {/* Order ID Box */}

@@ -59,7 +59,7 @@ export default function AllBrandsPage() {
         {/* Header Hero */}
         <div className="text-center max-w-2xl mx-auto mb-10">
           <div className="inline-flex items-center gap-2 bg-pink-50 text-[#d81b60] text-xs font-bold px-3 py-1.5 rounded-full mb-3 uppercase tracking-wider border border-pink-100">
-            <Sparkles className="w-3.5 h-3.5" /> Luxury & Beauty Atelier
+            <Sparkles className="w-3.5 h-3.5" /> Luxury & Beauty 
           </div>
           <h1 className="text-3xl sm:text-5xl font-black text-gray-900 tracking-tight uppercase mb-3">
             Our World of Brands
