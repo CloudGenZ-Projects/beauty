@@ -50,7 +50,7 @@ export default async function AccountPageSSR() {
 
         // If no orders found by User ID, search by Email (for guest checkouts)
         if (orders.length === 0 && user.email) {
-          const emailRes = await fetch(`${wpUrl}/wp-json/wc/v3/orders?search=₹{encodeURIComponent(user.email)}`, { headers, cache: 'no-store' });
+          const emailRes = await fetch(`${wpUrl}/wp-json/wc/v3/orders?search=${encodeURIComponent(user.email)}`, { headers, cache: 'no-store' });
           if (emailRes.ok) {
             orders = await emailRes.json();
           }

@@ -27,7 +27,7 @@ const WishlistContext = createContext<WishlistContextType | undefined>(undefined
 // Helper to set cookie for SSR sync
 const updateWishlistCookie = (items: WishlistItem[]) => {
   try {
-    document.cookie = `velours_wishlist=₹{encodeURIComponent(
+    document.cookie = `velours_wishlist=${encodeURIComponent(
       JSON.stringify(items)
     )}; path=/; max-age=31536000; SameSite=Lax`;
   } catch (err) {

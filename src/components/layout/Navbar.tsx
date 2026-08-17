@@ -151,7 +151,7 @@ export default function Navbar() {
     setIsLoading(true);
     const debounceTimer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=₹{encodeURIComponent(searchQuery.trim())}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery.trim())}`);
         if (res.ok) {
           const data = await res.json();
           setSuggestions(data);
@@ -172,7 +172,7 @@ export default function Navbar() {
     const queryToUse = customQuery !== undefined ? customQuery : searchQuery;
 
     if (queryToUse.trim()) {
-      router.push(`/search?q=₹{encodeURIComponent(queryToUse.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(queryToUse.trim())}`);
       setIsSearchFocused(false);
       setIsMobileSearchExpanded(false);
     }
@@ -188,7 +188,7 @@ export default function Navbar() {
     name: catName.toUpperCase(),
     hasMegaMenu: true,
     id: catName,
-    href: `/shop?category=₹{encodeURIComponent(catName.toLowerCase())}`,
+    href: `/shop?category=${encodeURIComponent(catName.toLowerCase())}`,
   }));
 
   const DESKTOP_NAV_ITEMS = [
@@ -756,7 +756,7 @@ export default function Navbar() {
                           {isExpanded && (
                             <div className="p-3 bg-white border-t border-gray-100 space-y-3">
                               <Link
-                                href={`/shop?category=₹{encodeURIComponent(catKey.toLowerCase())}`}
+                                href={`/shop?category=${encodeURIComponent(catKey.toLowerCase())}`}
                                 onClick={() => setIsMobileDrawerOpen(false)}
                                 className="inline-block text-xs font-bold text-[#d81b60] hover:underline"
                               >
@@ -772,7 +772,7 @@ export default function Navbar() {
                                     {group.links.map((subLink, lIdx) => (
                                       <Link
                                         key={lIdx}
-                                        href={`/shop?category=₹{encodeURIComponent(subLink.toLowerCase())}`}
+                                        href={`/shop?category=${encodeURIComponent(subLink.toLowerCase())}`}
                                         onClick={() => setIsMobileDrawerOpen(false)}
                                         className="text-xs text-gray-600 hover:text-[#d81b60] py-1"
                                       >

@@ -55,7 +55,7 @@ function AuthForm() {
 
         // Save to cookie (Expires in 7 days)
         const maxAge = 7 * 24 * 60 * 60;
-        document.cookie = `user_session=₹{encodeURIComponent(JSON.stringify(data.user))}; path=/; max-age=₹{maxAge}; SameSite=Lax`;
+        document.cookie = `user_session=${encodeURIComponent(JSON.stringify(data.user))}; path=/; max-age=₹{maxAge}; SameSite=Lax`;
 
         // REDIRECT TO THE CORRECT URL (Checkout or Account)
         router.push(redirectUrl);

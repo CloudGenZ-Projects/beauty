@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -19,9 +19,13 @@ export interface MegaMenuCategories {
   }[];
 }
 
+// -----------------------------------------------------------------
+// DYNAMIC BRANDS INTERFACE
+// Ab "popular" aur "luxe" hardcoded nahi hain. API se jo bhi keys aayengi, 
+// unka use hoga (e.g., trending, premium, etc.)
+// -----------------------------------------------------------------
 export interface MegaMenuBrands {
-  popular: (BrandItem | string)[];
-  luxe: (BrandItem | string)[];
+  [groupName: string]: (BrandItem | string)[];
 }
 
 interface MegaMenuProps {
@@ -32,7 +36,7 @@ interface MegaMenuProps {
 }
 
 // -----------------------------------------------------------------
-// SAFE HELPER FUNCTIONS (Prevent Undefined / Runtime Crashes)
+// SAFE HELPER FUNCTIONS
 // -----------------------------------------------------------------
 const getBrandName = (brand: any): string => {
   if (!brand) return "";
@@ -67,14 +71,30 @@ const getBrandLogo = (brand: any): string | undefined => {
   return undefined;
 };
 
+// String ko capitalize karne ke liye helper
+const capitalize = (str: string) => {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
 export default function MegaMenu({
   activeMegaMenu,
   setActiveMegaMenu,
   categories,
   brands,
 }: MegaMenuProps) {
-  const [activeBrandTab, setActiveBrandTab] = useState<"popular" | "luxe">("popular");
+  const [activeBrandTab, setActiveBrandTab] = useState<string>("");
   const [expandedMobileCategory, setExpandedMobileCategory] = useState<number | null>(null);
+
+  // Extract dynamic groups from the API data
+  const brandGroups = useMemo(() => (brands ? Object.keys(brands) : []), [brands]);
+
+  // Set initial dynamic tab
+  useEffect(() => {
+    if (brandGroups.length > 0 && !brandGroups.includes(activeBrandTab)) {
+      setActiveBrandTab(brandGroups[0]);
+    }
+  }, [brandGroups, activeBrandTab]);
 
   // Lock background scroll on mobile when menu is active
   useEffect(() => {
@@ -88,13 +108,21 @@ export default function MegaMenu({
     };
   }, [activeMegaMenu]);
 
-  const isCategoryMenu = activeMegaMenu && categories[activeMegaMenu];
+  // Determine which UI layout to show dynamically
+  const isCategoryMenu = !!(activeMegaMenu && categories && categories[activeMegaMenu]);
+  const isBrandMenu = !!(activeMegaMenu && !isCategoryMenu && brandGroups.length > 0);
+
   const activeColumns = isCategoryMenu ? categories[activeMegaMenu] : [];
 
+  // Sidebar List (hamesha first dynamic key ka data dikhayega)
+  const sidebarGroup = brandGroups[0] || "";
+  const sidebarBrandsList = sidebarGroup && brands ? brands[sidebarGroup] : [];
+
+  // Grid List (active tab ka data dikhayega)
   const currentBrandsList =
-    brands && brands[activeBrandTab]
+    brands && activeBrandTab && brands[activeBrandTab]
       ? brands[activeBrandTab]
-      : brands?.popular || [];
+      : [];
 
   const toggleMobileCategory = (index: number) => {
     setExpandedMobileCategory(expandedMobileCategory === index ? null : index);
@@ -104,9 +132,7 @@ export default function MegaMenu({
 
   return (
     <AnimatePresence>
-      {/* ----------------------------------------------------------------- */}
-      {/* MOBILE / TABLET OVERLAY BACKDROP (< md)                            */}
-      {/* ----------------------------------------------------------------- */}
+      {/* OVERLAY BACKDROP */}
       <motion.div
         key="backdrop"
         initial={{ opacity: 0 }}
@@ -117,9 +143,7 @@ export default function MegaMenu({
         onClick={() => setActiveMegaMenu(null)}
       />
 
-      {/* ----------------------------------------------------------------- */}
-      {/* DESKTOP MEGA MENU (md+)                                           */}
-      {/* ----------------------------------------------------------------- */}
+      {/* DESKTOP MEGA MENU (md+) */}
       <motion.div
         key="desktop-megamenu"
         initial={{ opacity: 0, y: 10 }}
@@ -155,16 +179,16 @@ export default function MegaMenu({
           </div>
         )}
 
-        {/* --- BRANDS VIEW (DESKTOP) --- */}
-        {activeMegaMenu === "brands" && (
+        {/* --- DYNAMIC BRANDS/IMAGE GRID VIEW (DESKTOP) --- */}
+        {isBrandMenu && (
           <div className="max-w-[1400px] mx-auto flex h-[440px]">
-            {/* Left Sidebar: Popular Quick Links */}
+            {/* Left Sidebar: Dynamic Quick Links */}
             <div className="w-1/3 lg:w-1/4 bg-gray-50/50 border-r border-gray-100 p-6 flex flex-col h-full">
               <h3 className="font-bold text-gray-900 text-xs tracking-wider uppercase mb-4">
-                Top Featured Brands
+                Top {capitalize(sidebarGroup)}
               </h3>
               <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 pr-2 custom-scrollbar">
-                {brands.popular?.map((brand, i) => {
+                {sidebarBrandsList.map((brand, i) => {
                   const bName = getBrandName(brand);
                   const bSlug = getBrandSlug(brand);
                   if (!bName) return null;
@@ -183,33 +207,25 @@ export default function MegaMenu({
               </div>
             </div>
 
-            {/* Right Side: Grid Display */}
+            {/* Right Side: Dynamic Grid Display */}
             <div className="w-2/3 lg:w-3/4 p-6 lg:p-8 flex flex-col justify-between">
               <div>
-                {/* Switcher Tabs */}
+                {/* Dynamic Switcher Tabs */}
                 <div className="flex gap-3 mb-6">
-                  <button
-                    onClick={() => setActiveBrandTab("popular")}
-                    onMouseEnter={() => setActiveBrandTab("popular")}
-                    className={`px-6 py-2 text-xs font-bold tracking-widest uppercase rounded transition-all ${
-                      activeBrandTab === "popular"
-                        ? "bg-[#d81b60] text-white shadow-md"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    Popular Brands
-                  </button>
-                  <button
-                    onClick={() => setActiveBrandTab("luxe")}
-                    onMouseEnter={() => setActiveBrandTab("luxe")}
-                    className={`px-6 py-2 text-xs font-bold tracking-widest uppercase rounded transition-all ${
-                      activeBrandTab === "luxe"
-                        ? "bg-[#d81b60] text-white shadow-md"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    Luxe Brands
-                  </button>
+                  {brandGroups.map((group) => (
+                    <button
+                      key={group}
+                      onClick={() => setActiveBrandTab(group)}
+                      onMouseEnter={() => setActiveBrandTab(group)}
+                      className={`px-6 py-2 text-xs font-bold tracking-widest uppercase rounded transition-all ${
+                        activeBrandTab === group
+                          ? "bg-[#d81b60] text-white shadow-md"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {capitalize(group)}
+                    </button>
+                  ))}
                 </div>
 
                 {/* Grid */}
@@ -252,7 +268,7 @@ export default function MegaMenu({
                   onClick={() => setActiveMegaMenu(null)}
                   className="text-xs font-bold text-[#d81b60] hover:underline uppercase tracking-wider inline-flex items-center gap-1"
                 >
-                  View All Brands &rarr;
+                  View All {capitalize(activeMegaMenu)} &rarr;
                 </Link>
               </div>
             </div>
@@ -260,9 +276,7 @@ export default function MegaMenu({
         )}
       </motion.div>
 
-      {/* ----------------------------------------------------------------- */}
-      {/* MOBILE & TABLET DRAWER SHEET (< md)                              */}
-      {/* ----------------------------------------------------------------- */}
+      {/* MOBILE & TABLET DRAWER SHEET (< md) */}
       <motion.div
         key="mobile-megamenu"
         initial={{ y: "-100%", opacity: 0 }}
@@ -271,10 +285,10 @@ export default function MegaMenu({
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed top-0 left-0 right-0 max-h-[85vh] bg-white shadow-2xl rounded-b-2xl z-50 md:hidden flex flex-col overflow-hidden"
       >
-        {/* Drawer Header */}
+        {/* Dynamic Drawer Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50/80">
           <h2 className="font-bold text-gray-900 text-sm uppercase tracking-wider">
-            {activeMegaMenu === "brands" ? "Browse Brands" : activeMegaMenu}
+            {capitalize(activeMegaMenu)}
           </h2>
           <button
             onClick={() => setActiveMegaMenu(null)}
@@ -299,6 +313,7 @@ export default function MegaMenu({
 
         {/* Drawer Content Body */}
         <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+          
           {/* MOBILE: CATEGORY ACCORDION */}
           {isCategoryMenu && activeColumns.length > 0 && (
             <div className="space-y-3">
@@ -348,31 +363,27 @@ export default function MegaMenu({
             </div>
           )}
 
-          {/* MOBILE: BRANDS CONTENT */}
-          {activeMegaMenu === "brands" && (
+          {/* MOBILE: DYNAMIC BRANDS CONTENT */}
+          {isBrandMenu && (
             <div className="space-y-4">
-              {/* Tabs */}
-              <div className="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-lg">
-                <button
-                  onClick={() => setActiveBrandTab("popular")}
-                  className={`py-2 text-xs font-bold tracking-wider uppercase rounded-md transition-all ${
-                    activeBrandTab === "popular"
-                      ? "bg-white text-[#d81b60] shadow-sm"
-                      : "text-gray-600"
-                  }`}
-                >
-                  Popular
-                </button>
-                <button
-                  onClick={() => setActiveBrandTab("luxe")}
-                  className={`py-2 text-xs font-bold tracking-wider uppercase rounded-md transition-all ${
-                    activeBrandTab === "luxe"
-                      ? "bg-white text-[#d81b60] shadow-sm"
-                      : "text-gray-600"
-                  }`}
-                >
-                  Luxe
-                </button>
+              {/* Dynamic Tabs Grid based on API keys count */}
+              <div 
+                className="grid gap-2 p-1 bg-gray-100 rounded-lg" 
+                style={{ gridTemplateColumns: `repeat(${brandGroups.length}, minmax(0, 1fr))` }}
+              >
+                {brandGroups.map((group) => (
+                  <button
+                    key={group}
+                    onClick={() => setActiveBrandTab(group)}
+                    className={`py-2 text-xs font-bold tracking-wider uppercase rounded-md transition-all ${
+                      activeBrandTab === group
+                        ? "bg-white text-[#d81b60] shadow-sm"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    {capitalize(group)}
+                  </button>
+                ))}
               </div>
 
               {/* Brand Grid */}
@@ -414,7 +425,7 @@ export default function MegaMenu({
                   onClick={() => setActiveMegaMenu(null)}
                   className="inline-block py-2 px-4 bg-gray-900 text-white text-xs font-bold rounded-lg uppercase tracking-wider w-full"
                 >
-                  Explore All Brands
+                  Explore All {capitalize(activeMegaMenu)}
                 </Link>
               </div>
             </div>

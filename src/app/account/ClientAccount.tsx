@@ -105,7 +105,7 @@ export default function ClientAccount({ user, initialProfile, initialOrders }: C
 
       // Update local cookie for top-level name changes
       const updatedUser = { ...user, firstName: profile.first_name, lastName: profile.last_name };
-      document.cookie = `user_session=₹{encodeURIComponent(JSON.stringify(updatedUser))}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `user_session=&{encodeURIComponent(JSON.stringify(updatedUser))}; path=/; max-age=604800; SameSite=Lax`;
       
       setMessage({ type: "success", text: "Details updated successfully!" });
       setIsEditing(false); // Close edit mode on success
