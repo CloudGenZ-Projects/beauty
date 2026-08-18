@@ -286,54 +286,42 @@ export default function HomePageClient({
 
       {/* CIRCULAR DEALS */}
       {circularDealsData.length > 0 && (
-        <section className="bg-[#fce4ec] py-3 sm:py-4 md:py-6 w-full border-b border-pink-200">
+        <section className="bg-[#fce4ec] py-4 sm:py-6 md:py-8 w-full border-b border-pink-200">
           <div className="max-w-[1600px] mx-auto px-2 sm:px-4 overflow-x-auto scrollbar-hide snap-x">
-            <div className="flex items-center gap-3 sm:gap-6 md:gap-8 min-w-max px-2 justify-start sm:justify-center">
+            <div className="flex items-center gap-4 sm:gap-6 md:gap-8 min-w-max px-2 justify-start sm:justify-center">
               {circularDealsData.map((rawDeal: any, idx: number) => {
+                
+                // NAYA GENERIC DATA MAPPING
                 const deal = {
-                  label: rawDeal.acf?.deal_label || (typeof rawDeal.title === 'string' ? rawDeal.title : rawDeal.title?.rendered) || rawDeal.deal_label || rawDeal.label || "",
-                  price: rawDeal.acf?.deal_value || rawDeal.deal_value || rawDeal.price || "0",
-                  type: rawDeal.acf?.deal_type || rawDeal.deal_type || rawDeal.type || "under",
-                  highlight: rawDeal.acf?.highlight || rawDeal.highlight || false,
-                  color: rawDeal.acf?.color || rawDeal.color || "border-[#ffb74d]"
+                  // Pehle naye fields check karega, agar nahi mile toh purane fields fallback ke liye
+                  title: rawDeal.acf?.deal_title || rawDeal.acf?.deal_label || (typeof rawDeal.title === 'string' ? rawDeal.title : rawDeal.title?.rendered) || "",
+                  subtitle: rawDeal.acf?.deal_subtitle || "",
+                  link: rawDeal.acf?.deal_link || "/shop", // Agar link khali hai toh default /shop pe jayega
                 };
 
-                // DYNAMIC PRICE FILTERING LOGIC
-                let linkHref = "/shop";
-                const dealPrice = parseFloat(deal.price);
-
-                if (!isNaN(dealPrice) && dealPrice > 0) {
-                  if (deal.type === "under") {
-                    linkHref = `/shop?max_price=${dealPrice}`;
-                  } else if (deal.type === "flat") {
-                    linkHref = `/shop?min_price=${dealPrice}&max_price=${dealPrice}`;
-                  } else {
-                    linkHref = `/shop?on_sale=true`;
-                  }
-                } else if (deal.type === "percentage") {
-                  linkHref = `/shop?on_sale=true`;
-                }
-
                 return (
-                  <Link href={linkHref} prefetch={false} key={rawDeal.id || idx} className="flex flex-col items-center gap-1.5 sm:gap-2 cursor-pointer group snap-start">
-                    <div className="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full bg-white shadow-md flex items-center justify-center p-1 transition-transform group-hover:scale-105">
-                      {deal.type === "under" ? (
-                        <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-[#d32f2f] text-white shadow-inner' : `border-[3px] sm:border-[4px] ${deal.color} bg-white `}`}>
-                          <span className={`text-[7px] sm:text-[9px] md:text-[10px] font-bold uppercase ${deal.highlight ? 'text-white' : 'text-gray-500'}`}>{deal.highlight ? 'All Under' : 'Under'}</span>
-                          <span className={`text-sm sm:text-lg md:text-xl font-black leading-none ${deal.highlight ? 'text-white' : 'text-[#000]'}`}><span className="text-[10px] sm:text-xs">₹</span>{deal.price}</span>
-                        </div>
-                      ) : deal.type === "flat" ? (
-                          <div className={`w-full h-full rounded-full flex flex-col items-center justify-center ${deal.highlight ? 'bg-gradient-to-br from-purple-600 to-indigo-800 text-white shadow-inner' : `border-[3px] sm:border-[4px] ${deal.color} bg-white`}`}>
-                          <span className="text-[8px] sm:text-[9px] md:text-[11px] font-bold uppercase">FLAT</span>
-                          <span className="text-sm sm:text-lg md:text-xl font-black leading-none"><span className="text-[10px] sm:text-xs">₹</span>{deal.price}</span>
-                          </div>
-                      ) : (
-                          <div className="w-full h-full rounded-full bg-gradient-to-br from-red-600 to-red-800 text-white flex flex-col items-center justify-center shadow-inner font-black text-sm sm:text-xl md:text-3xl leading-none shadow-[inset_0_0_10px_rgba(0,0,0,0.5)]">
-                            <span className="drop-shadow-md">{deal.price}<span className="text-xs sm:text-sm">%</span></span>
-                          </div>
-                      )}
+                  <Link 
+                    href={deal.link} 
+                    prefetch={false} 
+                    key={rawDeal.id || idx} 
+                    className="flex flex-col items-center gap-2 sm:gap-3 cursor-pointer group snap-start"
+                  >
+                    {/* CIRCLE CONTAINER */}
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28 rounded-full bg-white shadow-md flex items-center justify-center p-1 sm:p-1.5 transition-all duration-300 group-hover:scale-105 group-hover:shadow-lg">
+                      
+                      {/* INNER CIRCLE DESIGN (Generic Style) */}
+                      <div className="w-full h-full rounded-full flex flex-col items-center justify-center text-center p-2 border-[3px] sm:border-[4px] border-[#d81b60] bg-white group-hover:bg-[#d81b60] transition-colors duration-300">
+                        <span className="text-[10px] sm:text-[12px] md:text-[16px] font-black leading-tight text-gray-900 group-hover:text-white transition-colors px-1 uppercase break-words">
+                          {deal.title}
+                        </span>
+                      </div>
+
                     </div>
-                    <span className="text-[9px] sm:text-[10px] md:text-xs font-semibold text-gray-800 tracking-wide text-center group-hover:text-pink-600 transition-colors max-w-[70px] sm:max-w-none truncate sm:whitespace-normal">{deal.label}</span>
+                    
+                    {/* SUBTITLE TEXT */}
+                    <span className="text-[10px] sm:text-xs md:text-sm font-bold text-gray-800 tracking-wide text-center group-hover:text-[#d81b60] transition-colors max-w-[80px] sm:max-w-[100px] line-clamp-2">
+                      {deal.subtitle}
+                    </span>
                   </Link>
                 );
               })}
@@ -341,7 +329,6 @@ export default function HomePageClient({
           </div>
         </section>
       )}
-
       {/* ALL COLLECTION / CATEGORIES */}
       {categories.length > 0 && (
         <section className="py-8 sm:py-12 md:py-16 bg-[#faf6f0]">
