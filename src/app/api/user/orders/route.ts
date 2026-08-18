@@ -15,10 +15,10 @@ export async function GET(request: Request) {
     const baseUrl = wpUrl?.replace(/\/₹/, "");
 
     // Fetch orders for this specific customer
-    const wpResponse = await fetch(`₹{baseUrl}/wp-json/wc/v3/orders?customer=₹{userId}`, {
+    const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/orders?customer=${userId}`, {
       method: 'GET',
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64')
+        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')
       },
       next: { revalidate: 0 }
     });

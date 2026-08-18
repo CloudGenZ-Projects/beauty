@@ -246,20 +246,20 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                   {progress > 0 && order.status.toLowerCase() !== 'on-hold' && (
                     <div className="relative max-w-2xl mx-auto py-4 mb-8 hidden sm:block">
                       <div className="absolute top-1/2 left-[10%] right-[10%] h-1 bg-gray-100 -translate-y-1/2 rounded-full"></div>
-                      <div className={`absolute top-1/2 left-[10%] h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out`} style={{ width: `₹{((progress - 1) / 2) * 80}%` }}></div>
+                      <div className={`absolute top-1/2 left-[10%] h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out`} style={{ width: `${((progress - 1) / 2) * 80}%` }}></div>
                       
                       <div className="relative flex justify-between z-10">
                         <div className="flex flex-col items-center w-1/3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ₹{progress >= 1 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Receipt className="w-5 h-5" /></div>
-                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ₹{progress >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Placed</span>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${progress >= 1 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Receipt className="w-5 h-5" /></div>
+                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ${progress >= 1 ? 'text-gray-900' : 'text-gray-400'}`}>Placed</span>
                         </div>
                         <div className="flex flex-col items-center w-1/3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ₹{progress >= 2 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Truck className="w-5 h-5" /></div>
-                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ₹{progress >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>Processing</span>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${progress >= 2 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><Truck className="w-5 h-5" /></div>
+                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ${progress >= 2 ? 'text-gray-900' : 'text-gray-400'}`}>Processing</span>
                         </div>
                         <div className="flex flex-col items-center w-1/3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ₹{progress >= 3 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><CheckCircle2 className="w-5 h-5" /></div>
-                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ₹{progress >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>Delivered</span>
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${progress >= 3 ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}><CheckCircle2 className="w-5 h-5" /></div>
+                          <span className={`text-[11px] font-bold mt-3 uppercase tracking-wider ${progress >= 3 ? 'text-gray-900' : 'text-gray-400'}`}>Delivered</span>
                         </div>
                       </div>
                     </div>

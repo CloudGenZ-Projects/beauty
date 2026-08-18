@@ -18,29 +18,33 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    const baseUrl = wpUrl.replace(/\/₹/, "");
+    // FIX 1: Replaced `₹` with `$` to target the end of the string in regex
+    const baseUrl = wpUrl.replace(/\/$/, "");
 
-    // 2. Fetch the user from WooCommerce by their email
-    const wpResponse = await fetch(`₹{baseUrl}/wp-json/wc/v3/customers?email=₹{email}`, {
+    // FIX 2: Replaced `₹{}` with `${}` for template literals
+    const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/customers?email=${email}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64')
+        // FIX 3: Replaced `₹{}` with `${}` for the consumerSecret
+        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')
       }
     });
 
     const customers = await wpResponse.json();
 
-    // 3. If no customer is found in WooCommerce with that email
-    if (!customers || customers.length === 0) {
+    // FIX 4: Better error handling. Catch API errors (like 401 Unauthorized) before accessing arrays
+    if (!wpResponse.ok) {
+      console.error("WooCommerce API Error:", customers);
+      return NextResponse.json({ error: "Failed to communicate with WooCommerce." }, { status: wpResponse.status });
+    }
+
+    // 3. Ensure customers is an array and check if the email exists
+    if (!Array.isArray(customers) || customers.length === 0) {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
     const user = customers[0];
-
-    // Note: Standard WooCommerce REST API does not allow us to directly verify passwords. 
-    // We are trusting that if the email is found, the user exists. 
-    // (To properly verify passwords in WP via API, you would need to install a JWT Authentication plugin on your WordPress site).
 
     // 4. Return safe user object for our frontend LocalStorage
     const safeUser = {

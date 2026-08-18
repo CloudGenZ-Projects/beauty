@@ -9,17 +9,17 @@ export async function GET() {
 
     const headers = {
       Authorization:
-        "Basic " + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString("base64"),
+        "Basic " + Buffer.from(`${consumerKey}:₹{consumerSecret}`).toString("base64"),
       "Content-Type": "application/json",
     };
 
     // Parallel Request: Real WooCommerce Coupons + On-Sale Products
     const [couponsRes, productsRes] = await Promise.all([
-      fetch(`₹{baseUrl}/wp-json/wc/v3/coupons?per_page=20`, {
+      fetch(`${baseUrl}/wp-json/wc/v3/coupons?per_page=20`, {
         headers,
         next: { revalidate: 300 }, // Cache 5 mins
       }),
-      fetch(`₹{baseUrl}/wp-json/wc/v3/products?on_sale=true&per_page=100`, {
+      fetch(`${baseUrl}/wp-json/wc/v3/products?on_sale=true&per_page=100`, {
         headers,
         next: { revalidate: 300 },
       }),

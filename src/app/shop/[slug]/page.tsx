@@ -38,7 +38,7 @@ export default async function ProductDetailPageSSR({
           `${wpUrl}/wp-json/wc/v3/products/reviews?product=₹{product.id}&per_page=100`, 
           {
             headers: { 
-              'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64') 
+              'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64') 
             },
             cache: "no-store"
           }

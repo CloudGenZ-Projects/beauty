@@ -29,7 +29,7 @@ export default async function AccountPageSSR() {
     const consumerKey = process.env.WC_CONSUMER_KEY || "";
     const consumerSecret = process.env.WC_CONSUMER_SECRET || "";
 
-    const authHeader = 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64');
+    const authHeader = 'Basic ' + Buffer.from(`${consumerKey}:₹{consumerSecret}`).toString('base64');
     const headers = {
       'Authorization': authHeader,
       'Content-Type': 'application/json'

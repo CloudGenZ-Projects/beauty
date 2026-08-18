@@ -25,10 +25,10 @@ export default function Preloader() {
       ease: "power2.inOut",
       onUpdate: () => {
         if (counterRef.current) {
-          counterRef.current.innerText = `₹{Math.floor(counterObj.val)}%`;
+          counterRef.current.innerText = `${Math.floor(counterObj.val)}%`;
         }
         if (progressRef.current) {
-          progressRef.current.style.width = `₹{counterObj.val}%`;
+          progressRef.current.style.width = `${counterObj.val}%`;
         }
       },
     })

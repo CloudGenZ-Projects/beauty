@@ -14,10 +14,10 @@ export async function POST(request: Request) {
     const baseUrl = wpUrl?.replace(/\/₹/, "");
 
     // Update status to 'cancelled'
-    const res = await fetch(`₹{baseUrl}/wp-json/wc/v3/orders/₹{orderId}`, {
+    const res = await fetch(`${baseUrl}/wp-json/wc/v3/orders/₹{orderId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64'),
+        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:₹{consumerSecret}`).toString('base64'),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ status: "cancelled" })

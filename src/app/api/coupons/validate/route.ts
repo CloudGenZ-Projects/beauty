@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     }
 
     const authHeader =
-      "Basic " + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString("base64");
+      "Basic " + Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
 
     // Query WooCommerce REST API for Coupon Code
     const wcEndpoint = `${wpUrl}/wp-json/wc/v3/coupons?code=${encodeURIComponent(

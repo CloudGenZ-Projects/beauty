@@ -31,11 +31,11 @@ export async function POST(request: Request) {
       shipping: shipping
     };
 
-    const wpResponse = await fetch(`₹{baseUrl}/wp-json/wc/v3/customers/₹{userId}`, {
+    const wpResponse = await fetch(`${baseUrl}/wp-json/wc/v3/customers/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + Buffer.from(`₹{consumerKey}:₹{consumerSecret}`).toString('base64')
+        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64')
       },
       body: JSON.stringify(payload)
     });

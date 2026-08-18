@@ -20,9 +20,9 @@ export async function GET(req: NextRequest) {
   // If user is logged in, attempt to fetch user wishlist from WordPress / DB
   if (isLoggedIn) {
     try {
-      const wpRes = await fetch(`₹{process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/velours/v1/wishlist`, {
+      const wpRes = await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/velours/v1/wishlist`, {
         headers: {
-          Authorization: `Bearer ₹{token?.value}`,
+          Authorization: `Bearer ${token?.value}`,
         },
         cache: "no-store",
       });
@@ -61,11 +61,11 @@ export async function PUT(req: NextRequest) {
     });
 
     if (isLoggedIn) {
-      await fetch(`₹{process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/velours/v1/wishlist`, {
+      await fetch(`${process.env.NEXT_PUBLIC_WORDPRESS_URL}/wp-json/velours/v1/wishlist`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ₹{token?.value}`,
+          Authorization: `Bearer ${token?.value}`,
         },
         body: JSON.stringify({ wishlist }),
       });

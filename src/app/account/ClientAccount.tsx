@@ -105,7 +105,7 @@ export default function ClientAccount({ user, initialProfile, initialOrders }: C
 
       // Update local cookie for top-level name changes
       const updatedUser = { ...user, firstName: profile.first_name, lastName: profile.last_name };
-      document.cookie = `user_session=&{encodeURIComponent(JSON.stringify(updatedUser))}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `user_session=${encodeURIComponent(JSON.stringify(updatedUser))}; path=/; max-age=604800; SameSite=Lax`;
       
       setMessage({ type: "success", text: "Details updated successfully!" });
       setIsEditing(false); // Close edit mode on success
@@ -159,7 +159,7 @@ export default function ClientAccount({ user, initialProfile, initialOrders }: C
                   <button
                     key={tab.id}
                     onClick={() => handleTabChange(tab.id)}
-                    className={`flex items-center gap-3 px-6 py-4 text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors md:border-l-4 md:border-b-0 border-b-4 md:w-full ₹{
+                    className={`flex items-center gap-3 px-6 py-4 text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors md:border-l-4 md:border-b-0 border-b-4 md:w-full ${
                       activeTab === tab.id 
                       ? "bg-pink-50 text-[#d81b60] border-[#d81b60]" 
                       : "text-gray-600 hover:bg-gray-50 border-transparent"
@@ -184,7 +184,7 @@ export default function ClientAccount({ user, initialProfile, initialOrders }: C
               
               {/* GLOBAL MESSAGE FOR PROFILE FORMS */}
               {message.text && activeTab !== "orders" && (
-                <div className={`mb-8 p-4 text-sm rounded-xl font-medium flex items-center gap-3 shadow-sm border ₹{message.type === "success" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"}`}>
+                <div className={`mb-8 p-4 text-sm rounded-xl font-medium flex items-center gap-3 shadow-sm border ${message.type === "success" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"}`}>
                   {message.type === "success" ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
                   {message.text}
                 </div>
@@ -249,7 +249,7 @@ export default function ClientAccount({ user, initialProfile, initialOrders }: C
 
                   {!isEditing ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <DisplayField label="Full Name" value={`₹{shipping.first_name} ₹{shipping.last_name}`.trim()} icon={User} />
+                      <DisplayField label="Full Name" value={`${shipping.first_name} ${shipping.last_name}`.trim()} icon={User} />
                       <DisplayField label="Company" value={shipping.company} icon={Building} />
                       <div className="md:col-span-2">
                         <DisplayField 
@@ -304,7 +304,7 @@ export default function ClientAccount({ user, initialProfile, initialOrders }: C
 
                   {!isEditing ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <DisplayField label="Full Name" value={`₹{billing.first_name} ₹{billing.last_name}`.trim()} icon={User} />
+                      <DisplayField label="Full Name" value={`${billing.first_name} ${billing.last_name}`.trim()} icon={User} />
                       <DisplayField label="Phone Number" value={billing.phone} icon={Phone} />
                       <DisplayField label="Email Address" value={billing.email} icon={Mail} />
                       <div className="md:col-span-2 mt-2">
