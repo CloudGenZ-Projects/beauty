@@ -8,10 +8,9 @@ import { useWishlist } from "@/context/WishlistContext";
 import { 
   Plus, Minus, ShoppingCart, Star, 
   UserCircle, Loader2, Heart, ChevronLeft, ChevronRight,
-  ShieldCheck, Truck, RotateCcw, Share2, Check, Copy, Tag, Info
+  ShieldCheck, Truck, RotateCcw, Share2, Check, X, AlertCircle, CheckCircle2
 } from "lucide-react";
 import { getProductImage } from "@/lib/utils";
-import ToastPopup from "@/components/ToastPopup";
 
 interface ClientProductDetailProps {
   product: any;
@@ -51,8 +50,12 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [reviewForm, setReviewForm] = useState({ reviewer: "", reviewer_email: "", review: "", rating: 5 });
 
-  // Custom Popup State
-  const [popup, setPopup] = useState({ show: false, message: "", type: "success" });
+  // Custom Top-Left Popup State
+  const [popup, setPopup] = useState<{ show: boolean; message: string; type: "success" | "error" }>({
+    show: false,
+    message: "",
+    type: "success"
+  });
   const popupTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Sync initial reviews safely without erasing local submitted reviews
@@ -76,13 +79,13 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
   const discountPercent = hasDiscount ? Math.round(((regPrice - salePrice) / regPrice) * 100) : 0;
   const currentPrice = salePrice > 0 ? salePrice : regPrice;
 
-  // Helper function to show popup
-  const showPopup = (message: string, type: "success" | "error") => {
+  // Helper function to show Top-Left popup
+  const showPopup = (message: string, type: "success" | "error" = "success") => {
     setPopup({ show: true, message, type });
     if (popupTimeout.current) clearTimeout(popupTimeout.current);
     popupTimeout.current = setTimeout(() => {
-      setPopup({ show: false, message: "", type: "success" });
-    }, 3000);
+      setPopup((prev) => ({ ...prev, show: false }));
+    }, 3500);
   };
 
   // Gallery Navigation Handlers
@@ -120,13 +123,10 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
       const resData = await submitRes.json();
 
       if (!submitRes.ok) {
-        // Show real error from WooCommerce API in Toast Popup
         throw new Error(resData.error || "Failed to submit review");
       }
 
-      // Add actual created WooCommerce review object into state
       setReviews((prev) => [resData, ...(Array.isArray(prev) ? prev : [])]);
-
       showPopup("Review submitted successfully!", "success");
       setReviewForm({ reviewer: "", reviewer_email: "", review: "", rating: 5 });
 
@@ -138,19 +138,20 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
   };
 
   // Add to Cart Logic
-  const handleAddToCart = () => {
+  const handleAddToCart = (qtyToAdd?: number) => {
+    const finalQty = qtyToAdd || quantity;
     if (typeof addItem === "function") {
       addItem({ 
         id: product.id, 
         name: product.name, 
         slug: product.slug || String(product.id), 
         price: currentPrice, 
-        quantity, 
+        quantity: finalQty, 
         image: productImages[selectedImgIndex] || getProductImage(product),
         attributes: selectedAttributes
-      }, quantity);
+      }, finalQty);
       
-      showPopup("Added to Cart successfully!", "success");
+      showPopup(`Added ${finalQty} item(s) to Cart!`, "success");
       
       setIsAdded(true);
       setTimeout(() => setIsAdded(false), 3000);
@@ -183,6 +184,48 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
   return (
     <div className="bg-[#fcfcfc] min-h-screen pb-16 pt-4 sm:pt-8 relative">
+      
+      {/* TOP-LEFT NOTIFICATION POPUP */}
+      <div 
+        className={`fixed top-6 left-6 z-[99999] transition-all duration-300 transform ${
+          popup.show 
+            ? "translate-y-0 opacity-100 scale-100 pointer-events-auto" 
+            : "-translate-y-6 opacity-0 scale-95 pointer-events-none"
+        }`}
+      >
+        <div className={`flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-md max-w-sm ${
+          popup.type === "success"
+            ? "bg-white/95 text-gray-900 border-emerald-200 ring-1 ring-emerald-500/20"
+            : "bg-white/95 text-gray-900 border-red-200 ring-1 ring-red-500/20"
+        }`}>
+          <div className={`p-2 rounded-xl flex-shrink-0 ${
+            popup.type === "success" ? "bg-emerald-100 text-emerald-600" : "bg-red-100 text-red-600"
+          }`}>
+            {popup.type === "success" ? (
+              <CheckCircle2 className="w-5 h-5" />
+            ) : (
+              <AlertCircle className="w-5 h-5" />
+            )}
+          </div>
+          
+          <div className="flex-1 pr-1">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              {popup.type === "success" ? "Success" : "Notification"}
+            </p>
+            <p className="text-xs sm:text-sm font-semibold text-gray-800 leading-tight">
+              {popup.message}
+            </p>
+          </div>
+
+          <button 
+            onClick={() => setPopup((prev) => ({ ...prev, show: false }))}
+            className="p-1 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         
         {/* Breadcrumb Navigation */}
@@ -191,7 +234,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           <Link href="/shop" className="hover:text-[#d81b60] transition-colors">Shop</Link><span>/</span>
           {product.categories?.[0] && (
             <>
-              <Link href={`/shop?category=₹{product.categories[0].slug}`} className="hover:text-[#d81b60] transition-colors">
+              <Link href={`/shop?category=${product.categories[0].slug}`} className="hover:text-[#d81b60] transition-colors">
                 {product.categories[0].name}
               </Link>
               <span>/</span>
@@ -221,7 +264,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                   className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur p-3 rounded-full shadow-md text-gray-400 hover:text-[#d81b60] transition-all hover:scale-110 active:scale-95"
                   title={isLiked ? "Remove from Wishlist" : "Add to Wishlist"}
                 >
-                  <Heart className={`w-5 h-5 ₹{isLiked ? "text-[#d81b60] fill-current" : ""}`} />
+                  <Heart className={`w-5 h-5 ${isLiked ? "text-[#d81b60] fill-current" : ""}`} />
                 </button>
 
                 {/* Main Selected Image */}
@@ -257,7 +300,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                     <button
                       key={idx}
                       onClick={() => setSelectedImgIndex(idx)}
-                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 bg-gray-50 p-1 flex-shrink-0 transition-all ₹{
+                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 bg-gray-50 p-1 flex-shrink-0 transition-all ${
                         selectedImgIndex === idx
                           ? "border-[#d81b60] ring-2 ring-pink-100 shadow-sm"
                           : "border-gray-200 hover:border-pink-300 opacity-70 hover:opacity-100"
@@ -275,12 +318,12 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
               {/* Category / Stock Badge */}
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-black text-[#8e24aa] uppercase tracking-widest bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
-                  {product.categories?.[0]?.name || "Luxury "}
+                  {product.categories?.[0]?.name || "Luxury"}
                 </span>
 
                 {/* Stock Indicator */}
                 <div className="flex items-center gap-1.5 text-xs font-bold">
-                  <span className={`w-2.5 h-2.5 rounded-full ₹{product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500 animate-pulse"}`} />
+                  <span className={`w-2.5 h-2.5 rounded-full ${product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500 animate-pulse"}`} />
                   <span className={product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}>
                     {product.stock_status === "outofstock" ? "Out of Stock" : "In Stock & Ready to Ship"}
                   </span>
@@ -343,7 +386,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                           <button
                             key={option}
                             onClick={() => setSelectedAttributes((prev) => ({ ...prev, [attr.name]: option }))}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ₹{
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                               selectedAttributes[attr.name] === option
                                 ? "bg-gray-900 text-white shadow-sm"
                                 : "bg-white border border-gray-200 text-gray-700 hover:border-pink-300"
@@ -358,39 +401,64 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                 </div>
               )}
 
-              {/* ACTION BUTTONS & QUANTITY */}
+              {/* ACTION BUTTONS: INTEGRATED + - IN ADD TO CART BUTTON */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-8">
-                {/* Quantity Controls */}
-                <div className="flex items-center justify-between border-2 border-gray-200 rounded-2xl h-12 sm:h-14 w-full sm:w-32 px-4 bg-gray-50">
-                  <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-2 text-gray-600 hover:text-black transition-colors">
-                    <Minus className="w-4 h-4" />
+                {/* Unified Add to Cart + Quantity Button */}
+                <div 
+                  className={`w-full sm:flex-1 h-12 sm:h-14 flex items-center justify-between rounded-2xl border-2 transition-all overflow-hidden ${
+                    isAdded 
+                      ? "border-green-600 bg-green-600 text-white" 
+                      : "border-gray-900 bg-gray-900 text-white shadow-md hover:border-black"
+                  } ${product.stock_status === "outofstock" ? "opacity-50 pointer-events-none" : ""}`}
+                >
+                  {/* Minus Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setQuantity((prev) => Math.max(1, prev - 1));
+                    }}
+                    className="h-full px-3.5 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 active:scale-90 transition-all"
+                    title="Decrease Quantity"
+                  >
+                    <Minus className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
-                  <span className="font-bold text-base">{quantity}</span>
-                  <button onClick={() => setQuantity(quantity + 1)} className="p-2 text-gray-600 hover:text-black transition-colors">
-                    <Plus className="w-4 h-4" />
+
+                  {/* Main Add / Update Cart Center Click Area */}
+                  <button
+                    type="button"
+                    onClick={() => handleAddToCart()}
+                    className="flex-1 h-full flex items-center justify-center gap-2 font-bold text-xs sm:text-sm uppercase tracking-wider px-2 select-none hover:bg-white/5 active:scale-95 transition-all"
+                  >
+                    {isAdded ? (
+                      <>
+                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                        <span>Added ({quantity})</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span>Add To Cart</span>
+                        <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full font-extrabold min-w-[24px] text-center">
+                          {quantity}
+                        </span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Plus Button */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setQuantity((prev) => prev + 1);
+                    }}
+                    className="h-full px-3.5 flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 active:scale-90 transition-all"
+                    title="Increase Quantity"
+                  >
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 </div>
-                
-                {/* Add To Cart */}
-                <button 
-                  onClick={handleAddToCart} 
-                  disabled={product.stock_status === "outofstock"}
-                  className={`w-full sm:flex-1 h-12 sm:h-14 flex items-center justify-center gap-2 rounded-2xl border-2 font-bold text-xs sm:text-sm uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed ₹{
-                    isAdded 
-                      ? "border-green-600 bg-green-600 text-white hover:bg-green-700 hover:border-green-700" 
-                      : "border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white"
-                  }`}
-                >
-                  {isAdded ? (
-                    <>
-                      <Check className="w-4 h-4 sm:w-5 sm:h-5" /> Added! Add More
-                    </>
-                  ) : (
-                    <>
-                      <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" /> Add To Cart
-                    </>
-                  )}
-                </button>
                 
                 {/* Buy It Now */}
                 <button 
@@ -429,7 +497,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           <div className="flex border-b border-gray-200 mb-8 overflow-x-auto custom-scrollbar gap-8">
             <button
               onClick={() => setActiveTab("desc")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
                 activeTab === "desc" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -439,7 +507,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
             <button
               onClick={() => setActiveTab("specs")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
                 activeTab === "specs" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -449,7 +517,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
             <button
               onClick={() => setActiveTab("shipping")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
                 activeTab === "shipping" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -459,7 +527,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
 
             <button
               onClick={() => setActiveTab("reviews")}
-              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ₹{
+              className={`pb-4 text-xs sm:text-sm font-bold uppercase tracking-widest transition-all relative ${
                 activeTab === "reviews" ? "text-[#d81b60]" : "text-gray-400 hover:text-gray-700"
               }`}
             >
@@ -526,8 +594,8 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                     <tr>
                       <td className="py-3.5 px-4 font-bold text-gray-600">Stock Status</td>
                       <td className="py-3.5 px-4 font-medium text-gray-800 capitalize">
-                        <span className={`inline-flex items-center gap-1.5 font-bold ₹{product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}`}>
-                          <span className={`w-2 h-2 rounded-full ₹{product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500"}`} />
+                        <span className={`inline-flex items-center gap-1.5 font-bold ${product.stock_status === "outofstock" ? "text-red-600" : "text-emerald-700"}`}>
+                          <span className={`w-2 h-2 rounded-full ${product.stock_status === "outofstock" ? "bg-red-500" : "bg-emerald-500"}`} />
                           {product.stock_status === "outofstock" ? "Out of Stock" : "In Stock"}
                         </span>
                       </td>
@@ -542,12 +610,11 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
           {activeTab === "shipping" && (
             <div className="space-y-4 text-xs sm:text-sm text-gray-600 leading-relaxed max-w-2xl">
               <p className="font-semibold text-gray-800">📦 Express Domestic Shipping (2-4 Business Days)</p>
-              <p>All orders are dispatched from our luxury  warehouse within 24 hours.</p>
+              <p>All orders are dispatched from our luxury warehouse within 24 hours.</p>
             </div>
           )}
 
           {/* TAB 4: REVIEWS */}
-        
           {activeTab === "reviews" && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 relative">
               {/* Existing Reviews */}
@@ -559,7 +626,6 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                     No reviews yet. Be the first to review this product!
                   </p>
                 ) : (
-                  /* Add overscroll-contain here to stop main page from scrolling */
                   <div className="space-y-6 max-h-[500px] overflow-y-auto overscroll-contain pr-4 custom-scrollbar pb-4">
                     {displayReviews.map((rev: any, index: number) => (
                       <div key={rev.id || index} className="border-b border-gray-100 pb-6 last:border-b-0">
@@ -572,7 +638,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                           </div>
                           <div className="flex bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">
                             {[...Array(5)].map((_, i) => (
-                              <Star key={i} className={`w-3.5 h-3.5 ₹{i < (Number(rev.rating) || 5) ? "text-amber-400 fill-current" : "text-gray-300"}`} />
+                              <Star key={i} className={`w-3.5 h-3.5 ${i < (Number(rev.rating) || 5) ? "text-amber-400 fill-current" : "text-gray-300"}`} />
                             ))}
                           </div>
                         </div>
@@ -586,7 +652,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                 )}
               </div>
 
-              {/* Write a Review Form - Made Sticky */}
+              {/* Write a Review Form */}
               <div className="bg-gray-50 p-6 rounded-3xl border border-gray-200 h-fit sticky top-24 shadow-sm">
                 <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider flex items-center gap-2">
                   <Star className="w-4 h-4 text-[#d81b60] fill-current" /> Write a Review
@@ -599,7 +665,7 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
                         <Star 
                           key={star} 
                           onClick={() => setReviewForm({ ...reviewForm, rating: star })} 
-                          className={`w-5 h-5 cursor-pointer hover:scale-110 transition-transform ₹{star <= reviewForm.rating ? "text-amber-400 fill-current" : "text-gray-200"}`} 
+                          className={`w-5 h-5 cursor-pointer hover:scale-110 transition-transform ${star <= reviewForm.rating ? "text-amber-400 fill-current" : "text-gray-200"}`} 
                         />
                       ))}
                     </div>
@@ -644,13 +710,6 @@ export default function ClientProductDetail({ product, initialReviews }: ClientP
         </div>
 
       </div>
-
-      <ToastPopup 
-        show={popup.show} 
-        message={popup.message} 
-        type={popup.type as "success" | "error"} 
-        onClose={() => setPopup({ ...popup, show: false })} 
-      />
 
     </div>
   );
