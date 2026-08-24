@@ -11,19 +11,24 @@ export async function POST(request: Request) {
     const wpUrl = (process.env.WC_URL || process.env.NEXT_PUBLIC_API_URL)?.trim();
     const consumerKey = process.env.WC_CONSUMER_KEY?.trim();
     const consumerSecret = process.env.WC_CONSUMER_SECRET?.trim();
-    const baseUrl = wpUrl?.replace(/\/₹/, "");
+    
+    // Fix: Trailing slash remove karne ka sahi regex /\/$/ hota hai
+    const baseUrl = wpUrl?.replace(/\/$/, ""); 
 
-    // Update status to 'cancelled'
-    const res = await fetch(`${baseUrl}/wp-json/wc/v3/orders/₹{orderId}`, {
+  
+    const res = await fetch(`${baseUrl}/wp-json/wc/v3/orders/${orderId}`, {
       method: 'PUT',
       headers: {
-        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:₹{consumerSecret}`).toString('base64'),
+        'Authorization': 'Basic ' + Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64'),
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ status: "cancelled" })
     });
 
-    if (!res.ok) throw new Error("Failed to cancel order in WooCommerce");
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || "Failed to cancel order in WooCommerce");
+    }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

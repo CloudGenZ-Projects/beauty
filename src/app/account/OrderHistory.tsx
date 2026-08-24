@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   Package, CheckCircle2, Truck, RefreshCcw, X, 
@@ -14,12 +14,13 @@ export interface Order {
   status: string;
   date_created: string;
   total: string;
-  currency_symbol: string;
+  currency_symbol?: string;
+  currency?: string;
   line_items: any[];
-  shipping: any;
-  billing: any;
-  shipping_total: string;
-  total_tax: string;
+  shipping?: any;
+  billing?: any;
+  shipping_total?: string;
+  total_tax?: string;
 }
 
 interface OrderHistoryProps {
@@ -34,16 +35,24 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
   const [expandedOrder, setExpandedOrder] = useState<number | null>(null);
   const [message, setMessage] = useState({ type: "", text: "" });
   
+  // Sync state if initialOrders prop updates asynchronously
+  useEffect(() => {
+    if (initialOrders) {
+      setLocalOrders(initialOrders);
+    }
+  }, [initialOrders]);
+
   // Filter & Pagination State
   const [orderFilter, setOrderFilter] = useState<"all" | "active" | "completed" | "returns" | "cancelled">("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Adjust this to show more/less items per page
+  const itemsPerPage = 5;
 
   // Action States
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<number | null>(null);
   const [returnReason, setReturnReason] = useState("");
+  const [returnDetails, setReturnDetails] = useState("");
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const [emailingOrderId, setEmailingOrderId] = useState<number | null>(null);
 
@@ -55,8 +64,8 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
 
   // --- FILTER & PAGINATION LOGIC ---
   const filteredOrders = useMemo(() => {
-    return localOrders.filter(order => {
-      const status = order.status.toLowerCase();
+    return (localOrders || []).filter((order) => {
+      const status = (order.status || "").toLowerCase();
       if (orderFilter === "active") return ["pending", "processing"].includes(status);
       if (orderFilter === "completed") return ["completed"].includes(status);
       if (orderFilter === "returns") return ["on-hold", "refunded"].includes(status);
@@ -65,20 +74,20 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
     });
   }, [localOrders, orderFilter]);
 
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
   const handleFilterChange = (filter: any) => {
     setOrderFilter(filter);
-    setCurrentPage(1); // Reset to page 1 on filter change
+    setCurrentPage(1);
     setExpandedOrder(null);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    setExpandedOrder(null); // Close expanded details when paginating
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Optional: scroll to top of list
+    setExpandedOrder(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // --- API ACTIONS ---
@@ -91,13 +100,18 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
       const res = await fetch("/api/orders/return", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: selectedOrder, reason: returnReason }),
+        body: JSON.stringify({ 
+          orderId: selectedOrder, 
+          reason: returnReason,
+          details: returnDetails 
+        }),
       });
       if (!res.ok) throw new Error("Return request failed");
       
       setLocalOrders(prev => prev.map(o => o.id === selectedOrder ? { ...o, status: "on-hold" } : o));
       setReturnModalOpen(false);
       setReturnReason("");
+      setReturnDetails("");
       showMessage("success", "Return request submitted successfully. Our team will review it.");
       router.refresh(); 
     } catch (error) {
@@ -146,7 +160,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
   };
 
   // --- UI HELPERS ---
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string = "") => {
     const s = status.toLowerCase();
     switch (s) {
       case 'completed': return { color: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20', text: 'Delivered', progress: 3 };
@@ -155,7 +169,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
       case 'on-hold': return { color: 'bg-orange-50 text-orange-700 ring-orange-600/20', text: 'Return Pending', progress: 3 };
       case 'cancelled': case 'failed': return { color: 'bg-rose-50 text-rose-700 ring-rose-600/20', text: 'Cancelled', progress: 0 };
       case 'refunded': return { color: 'bg-slate-100 text-slate-700 ring-slate-600/20', text: 'Refunded', progress: 0 };
-      default: return { color: 'bg-gray-50 text-gray-700 ring-gray-600/20', text: status, progress: 0 };
+      default: return { color: 'bg-gray-50 text-gray-700 ring-gray-600/20', text: status || 'Unknown', progress: 0 };
     }
   };
 
@@ -182,7 +196,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
               <button
                 key={tab.id}
                 onClick={() => handleFilterChange(tab.id)}
-                className={`flex-shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ₹{
+                className={`flex-shrink-0 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
                   isActive 
                     ? "bg-white text-gray-900 shadow-sm ring-1 ring-black/5" 
                     : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
@@ -197,7 +211,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
 
       {/* TOAST MESSAGE */}
       {message.text && (
-        <div className={`p-4 text-sm rounded-xl font-medium flex items-center gap-3 shadow-sm border ₹{message.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
+        <div className={`p-4 text-sm rounded-xl font-medium flex items-center gap-3 shadow-sm border ${message.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"}`}>
           {message.type === "success" ? <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" /> : <AlertCircle className="w-5 h-5 shrink-0 text-rose-600" />}
           {message.text}
         </div>
@@ -211,7 +225,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
           </div>
           <h3 className="text-xl font-bold text-gray-900 mb-2">No Orders Found</h3>
           <p className="text-sm text-gray-500 max-w-sm">
-            {orderFilter === "all" ? "You haven't placed any orders yet. Once you do, they will appear here." : `You have no ₹{orderFilter} orders matching your criteria.`}
+            {orderFilter === "all" ? "You haven't placed any orders yet. Once you do, they will appear here." : `You have no ${orderFilter} orders matching your criteria.`}
           </p>
         </div>
       ) : (
@@ -219,8 +233,13 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
           {currentOrders.map((order) => {
             const { color, text, progress } = getStatusBadge(order.status);
             const isExpanded = expandedOrder === order.id;
-            const isPending = order.status.toLowerCase() === 'pending';
-            const isCompleted = order.status.toLowerCase() === 'completed';
+            const statusLower = (order.status || '').toLowerCase();
+            const isPending = statusLower === 'pending';
+            const isCompleted = statusLower === 'completed';
+            
+            // Hard Guarantee Rupee Symbol
+            const currencySymbol = '₹';
+            const lineItems = order.line_items || [];
             
             return (
               <div key={order.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -228,14 +247,14 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                 {/* CARD HEADER */}
                 <div className="bg-gray-50/50 px-5 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                    <span className="text-lg font-bold text-gray-900">Order #{order.number}</span>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ring-1 ring-inset ₹{color}`}>
+                    <span className="text-lg font-bold text-gray-900">Order #{order.number || order.id}</span>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ring-1 ring-inset ${color}`}>
                       {text}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
                     <Clock className="w-4 h-4" /> 
-                    {new Date(order.date_created).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    {order.date_created ? new Date(order.date_created).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
                   </div>
                 </div>
 
@@ -243,7 +262,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                 <div className="p-5 sm:p-6">
                   
                   {/* TRACKING TIMELINE */}
-                  {progress > 0 && order.status.toLowerCase() !== 'on-hold' && (
+                  {progress > 0 && statusLower !== 'on-hold' && (
                     <div className="relative max-w-2xl mx-auto py-4 mb-8 hidden sm:block">
                       <div className="absolute top-1/2 left-[10%] right-[10%] h-1 bg-gray-100 -translate-y-1/2 rounded-full"></div>
                       <div className={`absolute top-1/2 left-[10%] h-1 bg-emerald-500 -translate-y-1/2 rounded-full transition-all duration-700 ease-in-out`} style={{ width: `${((progress - 1) / 2) * 80}%` }}></div>
@@ -269,29 +288,29 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                   <div className="flex flex-col sm:flex-row justify-between gap-6">
                     <div className="flex-1">
                       <div className="flex -space-x-3 overflow-hidden">
-                        {order.line_items.slice(0, 4).map((item, idx) => (
+                        {lineItems.slice(0, 4).map((item, idx) => (
                           <div key={idx} className="inline-block h-14 w-14 rounded-full ring-2 ring-white bg-gray-100 overflow-hidden">
                             {item.image?.src ? (
-                              <img src={item.image.src} alt={item.name} className="h-full w-full object-cover" />
+                              <img src={item.image.src} alt={item.name || 'Product'} className="h-full w-full object-cover" />
                             ) : (
                               <div className="h-full w-full flex items-center justify-center"><Package className="w-6 h-6 text-gray-400" /></div>
                             )}
                           </div>
                         ))}
-                        {order.line_items.length > 4 && (
+                        {lineItems.length > 4 && (
                           <div className="inline-flex h-14 w-14 items-center justify-center rounded-full ring-2 ring-white bg-gray-50 text-xs font-bold text-gray-500">
-                            +{order.line_items.length - 4}
+                            +{lineItems.length - 4}
                           </div>
                         )}
                       </div>
                       <p className="text-sm text-gray-500 mt-3 font-medium">
-                        {order.line_items.length} item{order.line_items.length > 1 ? 's' : ''} in this order
+                        {lineItems.length} item{lineItems.length !== 1 ? 's' : ''} in this order
                       </p>
                     </div>
                     
                     <div className="text-left sm:text-right">
                       <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Order Total</p>
-                      <span className="font-black text-gray-900 text-2xl">{order.currency_symbol}{order.total}</span>
+                      <span className="font-black text-gray-900 text-2xl">{currencySymbol}{parseFloat(order.total || "0").toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -300,41 +319,57 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                     <div className="mt-8 pt-6 border-t border-gray-100 animate-in slide-in-from-top-2 fade-in duration-200">
                       <h4 className="text-sm font-bold text-gray-900 mb-4">Items Summary</h4>
                       <div className="space-y-3 mb-8">
-                        {order.line_items.map((item) => (
-                          <div key={item.id} className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                            <div className="flex items-center gap-4">
-                              {item.image?.src ? (
-                                <img src={item.image.src} alt={item.name} className="w-12 h-12 object-cover rounded-lg bg-gray-50 border border-gray-100" />
-                              ) : (
-                                <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center"><Package className="w-5 h-5 text-gray-300" /></div>
-                              )}
-                              <div>
-                                <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
-                                <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity} × {order.currency_symbol}{(item.total / item.quantity).toFixed(2)}</p>
+                        {lineItems.map((item, idx) => {
+                          const unitPrice = item.quantity ? (parseFloat(item.total || "0") / item.quantity).toFixed(2) : parseFloat(item.price || item.total || "0").toFixed(2);
+                          return (
+                            <div key={item.id || idx} className="flex items-center justify-between bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                              <div className="flex items-center gap-4">
+                                {item.image?.src ? (
+                                  <img src={item.image.src} alt={item.name} className="w-12 h-12 object-cover rounded-lg bg-gray-50 border border-gray-100" />
+                                ) : (
+                                  <div className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center"><Package className="w-5 h-5 text-gray-300" /></div>
+                                )}
+                                <div>
+                                  <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
+                                  <p className="text-xs text-gray-500 mt-0.5">Qty: {item.quantity} × {currencySymbol}{unitPrice}</p>
+                                </div>
                               </div>
+                              <span className="font-bold text-gray-900">{currencySymbol}{parseFloat(item.total || "0").toFixed(2)}</span>
                             </div>
-                            <span className="font-bold text-gray-900">{order.currency_symbol}{item.total}</span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-gray-50/50 p-5 rounded-xl border border-gray-100">
                         <div className="space-y-4">
                           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Shipping Address</h4>
                           <p className="text-sm text-gray-900 font-medium leading-relaxed">
-                            {order.shipping.first_name} {order.shipping.last_name}<br />
-                            {order.shipping.address_1} {order.shipping.address_2 && `, ₹{order.shipping.address_2}`}<br />
-                            {order.shipping.city}, {order.shipping.state} {order.shipping.postcode}<br />
-                            {order.shipping.country}
+                            {order.shipping?.first_name || order.billing?.first_name} {order.shipping?.last_name || order.billing?.last_name}<br />
+                            {order.shipping?.address_1 || order.billing?.address_1}
+                            {(order.shipping?.address_2 || order.billing?.address_2) && `, ${order.shipping?.address_2 || order.billing?.address_2}`}<br />
+                            {order.shipping?.city || order.billing?.city}, {order.shipping?.state || order.billing?.state} {order.shipping?.postcode || order.billing?.postcode}<br />
+                            {order.shipping?.country || order.billing?.country}
                           </p>
                         </div>
                         <div className="space-y-4">
                           <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Order Breakdown</h4>
                           <div className="space-y-2 text-sm">
-                            <div className="flex justify-between text-gray-600"><span>Subtotal</span><span>{order.currency_symbol}{(parseFloat(order.total) - parseFloat(order.total_tax) - parseFloat(order.shipping_total)).toFixed(2)}</span></div>
-                            <div className="flex justify-between text-gray-600"><span>Shipping</span><span>{order.currency_symbol}{order.shipping_total}</span></div>
-                            <div className="flex justify-between text-gray-600"><span>Tax</span><span>{order.currency_symbol}{order.total_tax}</span></div>
-                            <div className="flex justify-between font-bold text-base text-gray-900 pt-3 border-t border-gray-200 mt-2"><span>Total</span><span>{order.currency_symbol}{order.total}</span></div>
+                            <div className="flex justify-between text-gray-600">
+                              <span>Subtotal</span>
+                              <span>{currencySymbol}{(parseFloat(order.total || "0") - parseFloat(order.total_tax || "0") - parseFloat(order.shipping_total || "0")).toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                              <span>Shipping</span>
+                              <span>{currencySymbol}{parseFloat(order.shipping_total || "0").toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-gray-600">
+                              <span>Tax</span>
+                              <span>{currencySymbol}{parseFloat(order.total_tax || "0").toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between font-bold text-base text-gray-900 pt-3 border-t border-gray-200 mt-2">
+                              <span>Total</span>
+                              <span>{currencySymbol}{parseFloat(order.total || "0").toFixed(2)}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -415,7 +450,7 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 ring-1 ring-inset ₹{
+                        className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus:outline-offset-0 ring-1 ring-inset ${
                           currentPage === page 
                             ? "z-10 bg-gray-900 text-white ring-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900" 
                             : "text-gray-900 ring-gray-300 hover:bg-gray-50"
@@ -491,8 +526,9 @@ export default function OrderHistory({ initialOrders }: OrderHistoryProps) {
                 
                 <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">Additional Details</label>
                 <textarea 
-                  required 
                   rows={3}
+                  value={returnDetails}
+                  onChange={(e) => setReturnDetails(e.target.value)}
                   placeholder="Provide additional context for your return..." 
                   className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent shadow-sm resize-none"
                 ></textarea>

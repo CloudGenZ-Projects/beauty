@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 
-// Helper function to check if category is hidden
+
 const isHiddenCategory = (cat: any) => {
-  // ⚠️ APNA ACF FIELD NAME YAHAN DHYAN SE MATCH KAREIN
+ 
   const ACF_FIELD_NAME = "hide_category"; 
 
-  // 1. Agar data 'acf' object ke andar aa raha hai
+ 
   if (cat.acf && cat.acf[ACF_FIELD_NAME] !== undefined) {
     const val = cat.acf[ACF_FIELD_NAME];
-    // True/False ya Yes/No ya 1/0 check karega
+   
     if (val === true || val === "yes" || val === "1" || val === 1) return true;
   }
 
-  // 2. Agar data WooCommerce ke 'meta_data' array ke andar aa raha hai
+ 
   if (Array.isArray(cat.meta_data)) {
     const meta = cat.meta_data.find((m: any) => m.key === ACF_FIELD_NAME);
     if (meta && (meta.value === "yes" || meta.value === "1" || meta.value === true || meta.value === 1)) {
@@ -37,19 +37,15 @@ export async function GET() {
     };
     
 
-    // 1. Fetch Categories (CACHE DISABLED FOR TESTING - revalidate: 0)
+   
     const categoriesRes = await fetch(
       `${baseUrl}/wp-json/wc/v3/products/categories?per_page=100&hide_empty=false`,
-      { headers, next: { revalidate: 0 } } // 👈 Yahan 0 kar diya hai cache clear karne ke liye
+      { headers, next: { revalidate: 0 } } 
     );
     const rawCategories = await categoriesRes.json();
 
-    // 🔴 DEBUGGING: Terminal par Category ka data check karne ke liye
     if (Array.isArray(rawCategories) && rawCategories.length > 0) {
-      console.log("=======================================");
-      console.log("DEBUG: Category ka Data kaisa aa raha hai:");
-      console.log("ACF Object Exists?:", !!rawCategories[0].acf);
-      console.log("Meta Data Exists?:", !!rawCategories[0].meta_data);
+     
       if(rawCategories[0].meta_data) {
           console.log("Meta Data Keys:", rawCategories[0].meta_data.map((m: any)=> m.key).join(", "));
       }

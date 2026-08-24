@@ -6,6 +6,7 @@ import { CartProvider } from "@/context/CartContext";
 // 1. Import the new WishlistProvider
 import { WishlistProvider } from "@/context/WishlistContext"; 
 import Link from "next/link";
+import Image from "next/image";
 
 // Import the social icons from react-icons
 import { FaFacebookF, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
@@ -37,18 +38,22 @@ export default function RootLayout({
               
               <main className="min-h-screen">{children}</main>
 
-              {/* GLOBE TRADING  Footer */}
+              {/* GLOBE TRADING Footer */}
               <footer className="bg-white pt-16 pb-8 border-t border-gray-200 mt-20">
                 <div className="max-w-7xl mx-auto px-6 flex flex-col items-center space-y-8">
                   
-                  {/* Logo Area */}
-                  <Link href="/" className="flex flex-col items-center justify-center text-center group">
-                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 tracking-[0.2em] uppercase leading-none group-hover:text-[#d81b60] transition-colors">
-                        GLOBE TRADING
-                     </h2>
-                     <span className="text-xs text-gray-500 tracking-[0.3em] uppercase mt-2 font-medium">
-                        
-                     </span>
+                  {/* Logo + Brand Name Area (Side by Side) */}
+                  <Link href="/" className="flex items-center justify-center gap-3 sm:gap-4 group select-none">
+                    <Image
+                      src="/logo.png"
+                      alt="Globe Trading Logo"
+                      width={60}
+                      height={60}
+                      className="h-10 sm:h-12 md:h-14 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+                    />
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 tracking-[0.15em] sm:tracking-[0.2em] uppercase leading-none group-hover:text-[#d81b60] transition-colors">
+                      GLOBE TRADING
+                    </h2>
                   </Link>
 
                   {/* Links */}

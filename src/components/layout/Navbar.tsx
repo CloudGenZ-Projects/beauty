@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -229,13 +230,15 @@ export default function Navbar() {
               <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
 
-            <Link href="/" className="flex flex-col group select-none">
-              <h1 className="text-base sm:text-2xl md:text-3xl font-black text-gray-900 tracking-[0.1em] sm:tracking-[0.15em] uppercase leading-none group-hover:text-[#d81b60] transition-colors">
-                GLOBE TRADING
-              </h1>
-              <span className="text-[6.5px] sm:text-[9px] text-gray-400 tracking-[0.2em] sm:tracking-[0.3em] uppercase mt-0.5 font-semibold">
-                
-              </span>
+            <Link href="/" className="flex items-center group select-none py-1">
+              <Image
+                src="/logo.png"
+                alt="Globe Trading Logo"
+                width={180}
+                height={55}
+                priority
+                className="h-8 sm:h-10 md:h-12 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              />
             </Link>
           </div>
 
@@ -317,7 +320,7 @@ export default function Navbar() {
                             {suggestions.map((item) => (
                               <Link
                                 key={item.id}
-                                href={`/shop/₹{item.slug}`}
+                                href={`/shop/${item.slug}`}
                                 onClick={() => setIsSearchFocused(false)}
                                 className="flex items-center gap-3.5 p-2.5 rounded-xl hover:bg-pink-50/60 transition-all group border border-transparent hover:border-pink-100/80"
                               >
@@ -532,7 +535,7 @@ export default function Navbar() {
                         {suggestions.map((item) => (
                           <Link
                             key={item.id}
-                            href={`/shop/₹{item.slug}`}
+                            href={`/shop/${item.slug}`}
                             onClick={() => {
                               setIsMobileSearchExpanded(false);
                             }}
@@ -631,7 +634,7 @@ export default function Navbar() {
             >
               <Link
                 href={item.href}
-                className={`text-[11px] lg:text-xs font-bold tracking-widest uppercase transition-colors relative group h-full flex items-center ₹{
+                className={`text-[11px] lg:text-xs font-bold tracking-widest uppercase transition-colors relative group h-full flex items-center ${
                   activeMegaMenu === item.id ? "text-[#d81b60]" : "text-gray-700 hover:text-[#d81b60]"
                 }`}
               >
@@ -691,10 +694,16 @@ export default function Navbar() {
             >
               {/* Drawer Top Branding */}
               <div className="bg-white border-b border-gray-100 flex items-center justify-between px-5 py-4 sticky top-0 z-10">
-                <div className="flex flex-col">
-                  <span className="font-black text-lg text-gray-900 tracking-widest uppercase">GLOBE TRADING</span>
-                  <span className="text-[8px] text-gray-400 tracking-[0.2em] uppercase"> Catalog</span>
-                </div>
+                <Link href="/" onClick={() => setIsMobileDrawerOpen(false)} className="flex items-center">
+                  <Image
+                    src="/logo.png"
+                    alt="Globe Trading Logo"
+                    width={140}
+                    height={40}
+                    priority
+                    className="h-8 w-auto object-contain"
+                  />
+                </Link>
                 <button
                   onClick={() => setIsMobileDrawerOpen(false)}
                   className="p-1.5 text-gray-400 hover:text-[#d81b60] rounded-full hover:bg-gray-100 transition-colors"
@@ -746,7 +755,7 @@ export default function Navbar() {
                           >
                             <span>{catKey}</span>
                             <ChevronDown
-                              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ₹{
+                              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${
                                 isExpanded ? "rotate-180 text-[#d81b60]" : ""
                               }`}
                             />
@@ -799,7 +808,7 @@ export default function Navbar() {
                   <div className="grid grid-cols-2 gap-1.5 p-1 bg-gray-100 rounded-lg mb-2">
                     <button
                       onClick={() => setMobileBrandTab("popular")}
-                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ₹{
+                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ${
                         mobileBrandTab === "popular" ? "bg-white text-[#d81b60] shadow-sm" : "text-gray-600"
                       }`}
                     >
@@ -807,7 +816,7 @@ export default function Navbar() {
                     </button>
                     <button
                       onClick={() => setMobileBrandTab("luxe")}
-                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ₹{
+                      className={`py-1.5 text-[11px] font-bold uppercase tracking-wider rounded ${
                         mobileBrandTab === "luxe" ? "bg-white text-[#d81b60] shadow-sm" : "text-gray-600"
                       }`}
                     >
@@ -828,7 +837,7 @@ export default function Navbar() {
                       return (
                         <Link
                           key={bIdx}
-                          href={`/brands/₹{slug}`}
+                          href={`/brands/${slug}`}
                           onClick={() => setIsMobileDrawerOpen(false)}
                           className="p-2 border border-gray-100 rounded-lg text-center text-xs font-semibold text-gray-700 bg-white hover:border-pink-200"
                         >
