@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
@@ -51,7 +51,8 @@ export default function SingleBrandPage() {
   const [loading, setLoading] = useState(true);
 
   const [searchFilter, setSearchFilter] = useState("");
-  const [sortBy, setSortBy] = useState<"default" | "low-high" | "high-low">("default");
+  // Added more sorting options for an end-to-end experience
+  const [sortBy, setSortBy] = useState<"default" | "low-high" | "high-low" | "a-z" | "z-a">("default");
   const [addedItems, setAddedItems] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
@@ -60,7 +61,8 @@ export default function SingleBrandPage() {
     async function fetchBrandAndProducts() {
       setLoading(true);
       try {
-        const res = await fetch(`/api/brands/₹{slug}`, { cache: "no-store" });
+        // BUG FIX: ₹{slug} ko wapas ${slug} kiya gaya hai 
+        const res = await fetch(`/api/brands/${slug}`, { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setBrand(data.brand);
@@ -137,13 +139,39 @@ export default function SingleBrandPage() {
     }, 3000);
   };
 
-  const filteredProducts = products
-    .filter((p) => p.name.toLowerCase().includes(searchFilter.toLowerCase()))
-    .sort((a, b) => {
-      if (sortBy === "low-high") return Number(a.price) - Number(b.price);
-      if (sortBy === "high-low") return Number(b.price) - Number(a.price);
-      return 0;
+  // ADVANCED FILTER & SORT LOGIC USING useMemo
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+
+    // 1. Search Filter
+    if (searchFilter.trim()) {
+      const lowercasedFilter = searchFilter.toLowerCase();
+      result = result.filter((p) => p.name.toLowerCase().includes(lowercasedFilter));
+    }
+
+    // 2. Sort Logic
+    result.sort((a, b) => {
+      // Safe price checking fallback
+      const priceA = Number(a.price || a.regular_price || 0);
+      const priceB = Number(b.price || b.regular_price || 0);
+
+      switch (sortBy) {
+        case "low-high":
+          return priceA - priceB;
+        case "high-low":
+          return priceB - priceA;
+        case "a-z":
+          return a.name.localeCompare(b.name); // Alphabetical A-Z
+        case "z-a":
+          return b.name.localeCompare(a.name); // Alphabetical Z-A
+        default:
+          return 0; // Original Array Order (Featured)
+      }
     });
+
+    return result;
+  }, [products, searchFilter, sortBy]);
+
 
   const renderProductCard = (product: Product) => {
     const discount =
@@ -173,13 +201,14 @@ export default function SingleBrandPage() {
           className="absolute top-5 right-5 z-10 p-2 rounded-full bg-white/80 backdrop-blur-md shadow-sm border border-gray-100 text-gray-400 hover:text-[#d81b60] transition-colors"
         >
           <Heart
-            className={`w-4 h-4 ₹{
+            className={`w-4 h-4 ${
               isInWishlist(product.id) ? "fill-[#d81b60] text-[#d81b60]" : ""
             }`}
           />
         </button>
 
-        <Link href={`/shop/₹{product.slug}`} className="block mb-3">
+        {/* BUG FIX: ₹{product.slug} ko wapas ${product.slug} kiya gaya hai */}
+        <Link href={`/shop/${product.slug}`} className="block mb-3">
           <div className="aspect-square bg-gray-50 rounded-xl overflow-hidden p-3 flex items-center justify-center relative">
             <img
               src={product.images[0]?.src || "/placeholder.png"}
@@ -190,7 +219,7 @@ export default function SingleBrandPage() {
         </Link>
 
         <div className="flex flex-col flex-1">
-          <Link href={`/shop/₹{product.slug}`}>
+          <Link href={`/shop/${product.slug}`}>
             <h3 className="text-xs sm:text-sm font-bold text-gray-800 line-clamp-2 group-hover:text-[#d81b60] transition-colors mb-2 min-h-[36px]">
               {product.name}
             </h3>
@@ -209,7 +238,7 @@ export default function SingleBrandPage() {
 
           <button
             onClick={(e) => handleAddToCart(e, product)}
-            className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm ₹{
+            className={`w-full py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-sm ${
               addedItems[product.id]
                 ? "bg-green-600 text-white hover:bg-green-700"
                 : "bg-gray-900 hover:bg-[#d81b60] text-white"
@@ -292,7 +321,7 @@ export default function SingleBrandPage() {
                 type="text"
                 value={searchFilter}
                 onChange={(e) => setSearchFilter(e.target.value)}
-                placeholder={`Search in ₹{brand?.name || "brand"}...`}
+                placeholder={`Search in ${brand?.name || "brand"}...`}
                 className="w-full bg-gray-50 border border-transparent focus:border-[#d81b60] focus:bg-white rounded-xl py-2 pl-10 pr-4 text-xs font-medium outline-none transition-all"
               />
             </div>
@@ -307,6 +336,8 @@ export default function SingleBrandPage() {
                 <option value="default">Sort by: Featured</option>
                 <option value="low-high">Price: Low to High</option>
                 <option value="high-low">Price: High to Low</option>
+                <option value="a-z">Name: A to Z</option>
+                <option value="z-a">Name: Z to A</option>
               </select>
             </div>
           </div>
